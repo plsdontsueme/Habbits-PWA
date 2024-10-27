@@ -1,49 +1,135 @@
-body {
+* {
+    box-sizing: border-box;
     font-family: Arial, sans-serif;
-    text-align: center;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f9;
-}
-
-h1 {
-    color: #333;
-    margin: 20px;
-}
-
-#app {
-    max-width: 400px;
-    margin: auto;
-}
-
-input, button {
+  }
+  
+  body {
+    display: flex;
+    flex-direction: column;
+    background-color: #2a2a35;
+    color: #d1d1e0;
+    height: 100vh;
+  }
+  
+  .title-bar {
+    background-color: #3b3b4f;
+    text-align: center;
     padding: 10px;
-    font-size: 16px;
-    margin-top: 10px;
-}
-
-button {
-    cursor: pointer;
-}
-
-#habitList {
-    list-style-type: none;
-    padding: 0;
-    margin-top: 20px;
-}
-
-.habit-item {
+    font-size: 1.5em;
+    color: #ffcc00;
+  }
+  
+  .menu-bar {
+    display: flex;
+    justify-content: space-around;
+    background-color: #3b3b4f;
+    padding: 10px;
+  }
+  
+  .menu-bar button {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    color: #ffcc00;
+  }
+  
+  .tab {
+    display: none;
+  }
+  
+  .tab.active {
+    display: block;
+  }
+  
+  #content {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  #add-habit-btn {
+    background-color: #ff6f61;
+    color: white;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    width: 100%;
+    font-size: 1em;
+    margin-bottom: 20px;
+  }
+  
+  .habit-item {
+    background-color: #3b3b4f;
+    border-radius: 8px;
+    padding: 15px;
+    margin: 10px 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
-    background-color: #fff;
-    margin-bottom: 10px;
+  }
+  
+  .habit-item button {
+    background-color: #ffcc00;
+    border: none;
     border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.habit-item.completed {
-    text-decoration: line-through;
-    color: gray;
-}
+    padding: 5px 10px;
+  }
+  
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .modal-content {
+    background-color: #3b3b4f;
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+  }
+  
+  input, select {
+    background-color: #2a2a35;
+    color: #d1d1e0;
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #3b3b4f;
+    border-radius: 5px;
+    width: 100%;
+  }
+  
+  /* Habit Detail Modal Grid */
+  #habit-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin: 20px 0;
+    text-align: center;
+  }
+  
+  #habit-detail-grid .day-label {
+    color: #d1d1e0;
+  }
+  
+  #habit-stats-curve {
+    stroke: #ffcc00;
+    fill: none;
+    stroke-width: 2;
+  }
+  
+  /* Habit List in Dashboard */
+  .habit-item .check-indicators {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+  }
+  
+  .habit-item .weekday {
+    font-size: 0.8em;
+    color: #888;
+  }
+  
