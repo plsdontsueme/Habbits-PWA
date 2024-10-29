@@ -149,8 +149,10 @@ habitCreationModal.addEventListener('submit', (e) => {
   const symbol = habitSymbolInput.value || habitSymbolInput.placeholder;
   const frequency = parseInt(habitFrequencyInput.value) || parseInt(habitFrequencyInput.placeholder);
   const reminder = habitReminderInput.value;
+  const habitType = document.getElementById('habit-type').value; // Get the selected value from the dropdown
+  const infiniteCounter = habitType === 'track-variable'; // true if 'track-variable', false otherwise
 
-  const newHabit = { name, description, color, symbol, frequency, reminder, completion: [] };
+  const newHabit = { name, description, infiniteCounter, color, symbol, frequency, reminder, completion: [] };
   addHabit(newHabit);
 
   // Schedule a daily notification if reminder time is set
@@ -320,7 +322,8 @@ function updateCurrentDayProgress(habit, progressBar, checkIcon, increment) {
     habit.completion.push(todayCompletion);
   }
 
-  let newCount = Math.min(Math.max(todayCompletion.count + increment, 0), habit.frequency);
+  let newCount = Math.max(todayCompletion.count + increment, 0);
+  if (!habit.infiniteCounter) newCount = Math.min(newCount, habit.frequency);
 
   if (newCount !== todayCompletion.count) {
     todayCompletion.count = newCount;
@@ -333,7 +336,9 @@ function updateCurrentDayProgress(habit, progressBar, checkIcon, increment) {
 function updateProgressBar(habit, progressBar, checkIcon, completionCount) {
   const completionRatio = completionCount / habit.frequency;
   const progressWidth = Math.min(completionRatio * 100, 100); // Limit width to 100%
-  checkIcon.textContent = progressWidth == 100 ? '✔' : '🞬';
+  const completionMarker = progressWidth == 100 ? '✔' : '🞬'
+  if (habit.infiniteCounter) checkIcon.textContent = completionRatio > 1 ? completionCount : completionMarker;
+  else checkIcon.textContent = completionMarker;
   progressBar.style.width = `${progressWidth}%`;
 }
 //#endregion
@@ -509,7 +514,8 @@ function changeCompletion(habit, date, progressBar, checkIcon, increment) {
     entry = habit.completion.find(entry => entry.date === dateString);
   }
 
-  entry.count = Math.max(Math.min(entry.count + increment, habit.frequency), 0);
+  entry.count = Math.max(entry.count + increment, 0);
+  if (!habit.infiniteCounter) entry.count = Math.min(entry.count, habit.frequency);
 
   updateCalendarDayProgressBar(habit, progressBar, checkIcon, entry.count);
   updateHabit(habit);
@@ -526,7 +532,10 @@ function changeCompletion(habit, date, progressBar, checkIcon, increment) {
 function updateCalendarDayProgressBar(habit, progressBar, checkIcon, completionCount) {
   const completionRatio = completionCount / habit.frequency;
   const barHeight = Math.min(completionRatio * 100, 100); // Limit width to 100%
-  checkIcon.textContent = barHeight == 100 ? '✔' : '🞬';
+  const progressWidth = Math.min(completionRatio * 100, 100); // Limit width to 100%
+  const completionMarker = progressWidth == 100 ? '✔' : '🞬'
+  if (habit.infiniteCounter) checkIcon.textContent = completionRatio > 1 ? completionCount : completionMarker;
+  else checkIcon.textContent = completionMarker;
   progressBar.style.height = `${barHeight}%`;
 }
 //#endregion
