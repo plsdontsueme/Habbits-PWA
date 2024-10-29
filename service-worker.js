@@ -9,6 +9,7 @@ const RESOURCES_TO_CACHE = [
     '/settings.js',
     '/app.js',
     '/manifest.json',
+    '/notification.js',
     '/storage.js',
 ];
 

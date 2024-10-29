@@ -20,7 +20,8 @@ body, html {
 
 .title-bar {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding: 1rem;
   font-size: 1.5rem;
   background-color: #1e1e1e;
@@ -148,6 +149,13 @@ body, html {
   align-items: center;
 }
 
+.modal h3 {
+  margin-top: 3rem;
+}
+.modal h2 {
+  margin-bottom: 1rem;
+}
+
 .modal-content {
   background: #1e1e1e;
   padding: 2rem;
@@ -162,11 +170,11 @@ button.close-btn {
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #fff;
+  color: #8d8d8d8c;
   cursor: pointer;
   position: absolute;
-  top: 0rem;
-  left: .8rem;
+  top: 0.1rem;
+  left: 0.5rem;
 }
 
 #habit-creation form label {
@@ -256,6 +264,46 @@ button.close-btn {
   background-color: #2563eb;
 }
 
+/* Calendar Month Selector */
+.calendar-month-selector {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  /*justify-content: center;*/
+  padding: 0.3rem;
+  background-color: #1e1e1e;
+  border-radius: 10px;
+  margin: 1rem 0;
+  /*margin: 1rem auto;*/
+  width: 60%; /* Adjust width as needed */
+  max-width: 600px; /* Limit maximum width */
+  border: 2px solid #444; /* Optional border */
+}
+
+.calendar-month-selector button {
+  background: #333;
+  border: none;
+  border-radius: 5px;
+  color: #f5f5f5;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.calendar-month-selector button:hover {
+  background: #444;
+  transform: scale(1.05); /* Slightly enlarge on hover */
+}
+
+#calendar-month-name {
+  margin: 0 1rem;
+  font-size: 1rem;
+  color: #f5f5f5;
+  text-align: center;
+  width: 100%;
+}
+
 /* Completion Calendar */
 #completion-calendar {
   display: grid;
@@ -263,23 +311,52 @@ button.close-btn {
   gap: 5px;
   margin-top: 1rem;
 }
+
 .calendar-day {
   width: 40px;
   height: 40px;
   border-radius: 5px;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   cursor: pointer;
+  position: relative;
+  background: #333;
 }
-.calendar-day.completed {
-  background-color: var(--habit-color);
+.calendar-day.in-future {
+  background: #33333300;
 }
-.calendar-day.missed {
-  background-color: #333;
+.calendar-day-progress-bar {
+  background-color: #3b82f6;
+  width: 100%;
+  border-radius: 5px;
+  transition: height 0.3s ease-in-out;
 }
 .calendar-day:hover {
   outline: 2px solid #3b82f6;
+}
+.calendar-day.in-future:hover {
+  outline: none;
+}
+
+.calendar-day-text {
+  position: absolute;
+  top: 55%;
+  right: 50%;
+  color: #8b8b8b6e;
+  font-weight: bold;
+}
+
+.calendar-day-check-icon {
+  position: absolute;
+  top: 7%;
+  right: 10%;
+  font-size: 10px;
+  color: #8b8b8b6e;
+}
+
+#habit-detail-description {
+  margin-bottom: -1rem; /* Space below the description */
 }
 
 /* 30-Day Progress Chart */
@@ -308,3 +385,61 @@ button.close-btn {
   padding: 1rem;
   cursor: pointer;
 }
+
+
+
+/* Settings */
+#settings h2 {
+  color: #f5f5f5;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background-color: #1e1e1e;
+  border: 2px solid #444;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.settings-item label {
+  color: #a9a9a9;
+  font-size: 1.2rem;
+}
+
+#calendar-order-toggle {
+  width: 40px;
+  height: 20px;
+  appearance: none;
+  background-color: #333;
+  border-radius: 15px;
+  cursor: pointer;
+  position: relative;
+  outline: none;
+  transition: background-color 0.3s;
+}
+
+#calendar-order-toggle:checked {
+  background-color: #3b82f6;
+}
+
+#calendar-order-toggle::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background-color: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s;
+}
+
+#calendar-order-toggle:checked::before {
+  transform: translateX(20px);
+}
+

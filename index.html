@@ -11,6 +11,7 @@
 <body>
   <header class="title-bar">
     <h1>BestLife</h1>
+    <h6 id="current-date"></h6>
   </header>
 
   <!-- Main Area -->
@@ -25,38 +26,48 @@
     </section>
     
     <section id="settings" class="tab">
-      <p>Settings (coming soon)</p>
-    </section>
+      <h2>Settings</h2>
+      <div class="settings-item">
+        <label for="calendar-order-toggle">Keep Calendar Day Order:</label>
+        <input type="checkbox" id="calendar-order-toggle">
+      </div>
+    </section>    
   </main>
 
   <!-- Menu Bar -->
   <nav class="menu-bar">
+    <button class="tab-button" onclick="showTab('settings')">⚙️</button>
     <button class="tab-button" onclick="showTab('habit-tracker')">📋</button>
     <button class="tab-button" onclick="showTab('workout-manager')">🏋️</button>
-    <button class="tab-button" onclick="showTab('settings')">⚙️</button>
   </nav>
 
   <!-- Habit Detail View Modal -->
   <div id="habit-detail" class="modal">
     <div class="modal-content">
-      <button class="close-btn" onclick="closeHabitDetail()">←</button>
+      <button class="close-btn" onclick="closeHabitDetail()">🡄</button>
       <h2 id="habit-detail-name"></h2>
       <p id="habit-detail-description"></p>
       
       <!-- Monthly Completion Calendar -->
       <h3>Completion Calendar</h3>
+      <div class="calendar-month-selector">
+        <button id="prev-month">‹</button>
+        <span id="calendar-month-name"></span>
+        <button id="next-month">›</button>
+      </div>
       <div id="completion-calendar"></div>
     
-      <!-- 30-Day Progress Chart -->
-      <h3>Last 30 Days Progress</h3>
+      <!-- Progress Chart -->
+      <h3>Last 20 Days Progress</h3>
       <canvas id="habit-progress-chart" width="400" height="200"></canvas>
+
     </div>  
   </div>  
 
   <!-- Habit Creation Modal -->
   <div id="habit-creation" class="modal">
     <div class="modal-content">
-      <button class="close-btn" onclick="closeHabitCreationModal()">←</button>
+      <button class="close-btn" onclick="closeHabitCreationModal()">🡄</button>
       <form id="habit-form">
         <label>Name: <input type="text" id="habit-name" placeholder="Drink Water" autocomplete="off" /></label>
         <label>Description: <textarea id="habit-description" autocomplete="off"></textarea></label>
@@ -79,7 +90,7 @@
         </div>
   
         <label>Symbol: <input type="text" id="habit-symbol" placeholder="☺️" maxlength="5" autocomplete="off" /></label>
-        <label>Times per Day: <input type="number" id="habit-frequency" placeholder="1" min="1" /></label>
+        <label>Goal per Day: <input type="number" id="habit-frequency" placeholder="1" min="1" /></label>
         <label>Reminder Time: <input type="time" id="habit-reminder" autocomplete="off" /></label>
         <button type="submit">Create Habit</button>
       </form>
@@ -89,6 +100,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>
   <script src="index.js" type="module"></script>
+  <script src="notification.js" type="module"></script>
   <script src="storage.js" type="module"></script>
   <script src="habitTracker.js" type="module"></script>
   <script src="workoutManager.js" type="module"></script>
