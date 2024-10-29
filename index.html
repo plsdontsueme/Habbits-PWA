@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="description" content="BestLife Habit Tracker">
   <title>BestLife</title>
   <link rel="stylesheet" href="styles.css">
@@ -13,10 +13,11 @@
     <h1>BestLife</h1>
   </header>
 
+  <!-- Main Area -->
   <main id="content">
-    <section id="dashboard" class="tab active">
-      <button id="add-habit-btn">➕ Add Habit</button>
-      <div id="habits-list"></div>
+    <section id="habit-tracker" class="tab">
+      <button id="add-habit-btn" onclick="openHabitCreationModal()">+</button>
+      <div id="habit-list"></div>
     </section>
     
     <section id="workout-manager" class="tab">
@@ -28,8 +29,9 @@
     </section>
   </main>
 
+  <!-- Menu Bar -->
   <nav class="menu-bar">
-    <button class="tab-button" onclick="showTab('dashboard')">📋</button>
+    <button class="tab-button" onclick="showTab('habit-tracker')">📋</button>
     <button class="tab-button" onclick="showTab('workout-manager')">🏋️</button>
     <button class="tab-button" onclick="showTab('settings')">⚙️</button>
   </nav>
@@ -37,36 +39,58 @@
   <!-- Habit Detail View Modal -->
   <div id="habit-detail" class="modal">
     <div class="modal-content">
-      <h2 id="habit-detail-title"></h2>
-      <div id="habit-detail-grid"></div>
-      <svg id="habit-stats-curve" width="100%" height="100"></svg>
-      <button onclick="closeHabitDetail()">Close</button>
-    </div>
-  </div>
+      <button class="close-btn" onclick="closeHabitDetail()">←</button>
+      <h2 id="habit-detail-name"></h2>
+      <p id="habit-detail-description"></p>
+      
+      <!-- Monthly Completion Calendar -->
+      <h3>Completion Calendar</h3>
+      <div id="completion-calendar"></div>
+    
+      <!-- 30-Day Progress Chart -->
+      <h3>Last 30 Days Progress</h3>
+      <canvas id="habit-progress-chart" width="400" height="200"></canvas>
+    </div>  
+  </div>  
 
+  <!-- Habit Creation Modal -->
   <div id="habit-creation" class="modal">
     <div class="modal-content">
-      <h2>Create a Habit</h2>
-      <input type="text" id="habit-name" placeholder="Habit Name">
-      <input type="color" id="habit-color" value="#ffcc00">
-      <label>
-        <input type="checkbox" id="reminder-toggle"> Reminder
-      </label>
-      <input type="time" id="reminder-time">
-      <select id="interval">
-        <option value="daily">Daily</option>
-        <option value="weekly">Weekly</option>
-        <option value="specific-days">Specific Days</option>
-      </select>
-      <button onclick="createHabit()">Add Habit</button>
-      <button onclick="closeModal()">Cancel</button>
+      <button class="close-btn" onclick="closeHabitCreationModal()">←</button>
+      <form id="habit-form">
+        <label>Name: <input type="text" id="habit-name" placeholder="Drink Water" autocomplete="off" /></label>
+        <label>Description: <textarea id="habit-description" autocomplete="off"></textarea></label>
+  
+        <div>
+          <label>Color:</label>
+          <div class="color-selection" id="color-selection">
+            <!-- Preset pastel colors -->
+            <div class="color-option" style="background-color: #ffadad;"></div>
+            <div class="color-option" style="background-color: #ffd6a5;"></div>
+            <div class="color-option" style="background-color: #fdffb6;"></div>
+            <div class="color-option" style="background-color: #caffbf;"></div>
+            <div class="color-option" style="background-color: #9bf6ff;"></div>
+            <div class="color-option" style="background-color: #a0c4ff;"></div>
+            <!-- Rainbow option for custom color picker -->
+            <div class="color-option rainbow" id="custom-color-trigger"></div>
+          </div>
+          <!-- Hidden color input for custom color selection -->
+          <input type="color" id="custom-color-picker" style="display: none;" />
+        </div>
+  
+        <label>Symbol: <input type="text" id="habit-symbol" placeholder="☺️" maxlength="5" autocomplete="off" /></label>
+        <label>Times per Day: <input type="number" id="habit-frequency" placeholder="1" min="1" /></label>
+        <label>Reminder Time: <input type="time" id="habit-reminder" autocomplete="off" /></label>
+        <button type="submit">Create Habit</button>
+      </form>
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>
-  <script src="storage.js" type="module"></script>
   <script src="index.js" type="module"></script>
-  <script src="dashboard.js" type="module"></script>
+  <script src="storage.js" type="module"></script>
+  <script src="habitTracker.js" type="module"></script>
   <script src="workoutManager.js" type="module"></script>
   <script src="settings.js" type="module"></script>
 </body>

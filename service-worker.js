@@ -4,7 +4,7 @@ const RESOURCES_TO_CACHE = [
     '/index.html',
     '/styles.css',
     '/index.js',
-    '/dashboard.js',
+    '/habitTracker.js',
     '/workoutManager.js',
     '/settings.js',
     '/app.js',

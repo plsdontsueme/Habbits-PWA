@@ -32,6 +32,8 @@ export default class StorageHandler {
 
   // Add a new habit
   async addHabit(habit) {
+    console.log('Adding habit ', habit);
+
     const db = await this.dbPromise;
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, 'readwrite');
@@ -69,21 +71,52 @@ export default class StorageHandler {
     });
   }
 
-  // Update a habit
-  async updateHabit(habit) {
-    const db = await this.dbPromise;
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.put(habit);
+    // Update a habit
+    async updateHabit(updatedHabit) {
+      console.log('Updating habit ', updatedHabit);
 
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = (event) => reject(`Error updating habit: ${event.target.errorCode}`);
-    });
-  }
+      const db = await this.dbPromise;
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+  
+        // First, get the existing habit
+        const getRequest = store.get(updatedHabit.id);
+  
+        getRequest.onsuccess = () => {
+          const habit = getRequest.result;
+  
+          if (!habit) {
+            reject(`Habit with ID ${updatedHabit.id} not found`);
+            return;
+          }
+  
+          // Update habit properties with new values from updatedHabit
+          habit.name = updatedHabit.name ?? habit.name;
+          habit.description = updatedHabit.description ?? habit.description;
+          habit.color = updatedHabit.color ?? habit.color;
+          habit.symbol = updatedHabit.symbol ?? habit.symbol;
+          habit.frequency = updatedHabit.frequency ?? habit.frequency;
+          habit.reminder = updatedHabit.reminder ?? habit.reminder;
+          habit.completion = updatedHabit.completion ?? habit.completion;
+  
+          // Save the updated habit back to the database
+          const updateRequest = store.put(habit);
+  
+          updateRequest.onsuccess = () => resolve(`Habit ${updatedHabit.id} updated`);
+          updateRequest.onerror = (event) => reject(`Error updating habit: ${event.target.errorCode}`);
+        };
+  
+        getRequest.onerror = (event) => reject(`Error retrieving habit: ${event.target.errorCode}`);
+      });
+    }
+  
+
 
   // Delete a habit by ID
   async deleteHabit(id) {
+    console.log('Deleting habit ', id);
+
     const db = await this.dbPromise;
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, 'readwrite');

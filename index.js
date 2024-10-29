@@ -1,22 +1,34 @@
-// index.js
+import { showHabitTracker } from './habitTracker.js';
+import { showSettings } from './settings.js';
+import { showWorkoutManager } from './workoutManager.js';
 
-import { showDashboard } from './dashboard.js';
+// Attach to the global scope
+window.showTab = showTab;
 
 // Function to show specific tabs based on the ID
 function showTab(tabId) {
   const tabs = document.querySelectorAll('.tab');
   tabs.forEach(tab => tab.classList.remove('active'));
-  document.getElementById(tabId).classList.add('active');
+  const selectedTab = document.getElementById(tabId);
 
-  // Call the appropriate function based on the tab
-  if (tabId === 'dashboard') showDashboard();
-  // More tab loading functions can be added as other tabs get content
+  // Check if the tab exists before proceeding
+  if (selectedTab) {
+    selectedTab.classList.add('active');
+
+    // Call the appropriate function based on the tab
+    if (tabId === 'habit-tracker') {
+      showHabitTracker();
+    } else if (tabId === 'workout-manager') {
+      showWorkoutManager();
+    } else if (tabId === 'settings') {
+      showSettings();
+    } else {
+      console.warn(`No handler found for tab: ${tabId}`);
+    }
+  } else {
+    console.error(`Tab with ID '${tabId}' does not exist.`);
+  }
 }
 
-// Tab switcher button event listeners
-document.querySelectorAll('.tab-button').forEach((button, index) => {
-  button.addEventListener('click', () => showTab(button.getAttribute('onclick').split("'")[1]));
-});
-
 // Initial tab to show
-showTab('dashboard');
+showTab('habit-tracker');

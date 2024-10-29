@@ -2,6 +2,6 @@
 
 export function showSettings() {
     // Placeholder for settings functionality
-    console.log("Settings (coming soon!!)");
+    console.log("showSettings");
   }
   
