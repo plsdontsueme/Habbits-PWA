@@ -1,29 +1,6 @@
 
-export async function showHabitTracker() {
-  console.log('showHabitTracker');
-  const savedSetting = localStorage.getItem("KEEP_CALENDAR_DAY_ORDER");
-  if (savedSetting !== null) {
-    KEEP_CALENDAR_DAY_ORDER = savedSetting === "true";
-    document.getElementById("calendar-order-toggle").checked = KEEP_CALENDAR_DAY_ORDER;
-  }
-
-  await loadHabitsAsLocal();
-  const today = new Date();
-  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-  document.getElementById('current-date').textContent = today.toLocaleDateString('de-DE', options);
-  renderHabits(); // load from storage and render
-}
-
-export async function onUnloadHabitTracker() {
-  await saveHabitsAsUTC();
-}
-
-
-//#region Constants
 import { scheduleDailyNotification, cancelNotification } from './notification.js';
-
-const SWIPE_THRESHOLD = 50;
-const LONG_PRESS_THRESHOLD = 500;
+import { saveArray, getArray, getBoolParameter } from './storage.js';
 
 let KEEP_CALENDAR_DAY_ORDER;
 
@@ -31,30 +8,28 @@ const months = [
   "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
-//#endregion
+const daysSingle = ["M", "T", "W", "T", "F", "S", "S"];
+const daysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-
-//#region Habit Storage
 let Habits = [];
 
-function addHabit(habit) {
-  Habits.push(habit);
+export async function showHabitTracker() {
+  console.log('showHabitTracker');
+
+  const today = new Date();
+  const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('current-date').textContent = today.toLocaleDateString('de-DE', options);
+
+  KEEP_CALENDAR_DAY_ORDER = getBoolParameter("KEEP_CALENDAR_DAY_ORDER");
+
+  await loadHabitsAsLocal();
+  renderHabits();
 }
-function removeHabit(habit) {
-  cancelNotification(habit)
-  Habits = Habits.filter(h => h !== habit);
-}
-function updateHabit(habit) {
-  const index = Habits.findIndex(h => h === habit);
-  if (index !== -1) {
-    Habits[index] = habit;
-  } else {
-    throw new Error(`Habit not found ${habit}`);
-  }
+export async function onUnloadHabitTracker() {
+  await saveHabitsAsUTC();
 }
 
-import { saveArray, getArray } from './storage.js';
-
+//#region Habit Saving / Loading
 async function saveHabitsAsUTC() {
   const utcHabits = Habits.map(habit => {
     if (habit.completion) {
@@ -81,65 +56,82 @@ async function loadHabitsAsLocal() {
 }
 //#endregion
 
+//#region Habit Array Manipulation
+function addHabit(habit) {
+  Habits.push(habit);
+}
+function removeHabit(habit) {
+  cancelNotification(habit)
+  Habits = Habits.filter(h => h !== habit);
+}
+function updateHabit(habit) {
+  const index = Habits.findIndex(h => h === habit);
+  if (index !== -1) {
+    Habits[index] = habit;
+  } else {
+    throw new Error(`Habit not found ${habit}`);
+  }
+}
+//#endregion
 
-//#region Habit Creation
+//#region Habit Creation Modal
+window.openHabitCreationModal = openHabitCreationModal;
+window.closeHabitCreationModal = closeHabitCreationModal;
+
 const habitNameInput = document.getElementById('habit-name');
 const habitDescriptionInput = document.getElementById('habit-description');
 const habitSymbolInput = document.getElementById('habit-symbol');
 const habitFrequencyInput = document.getElementById('habit-frequency');
 const habitReminderInput = document.getElementById('habit-reminder');
+const habitTypeSelection = document.getElementById('habit-type');
 const habitCreationModal = document.getElementById('habit-creation');
+let selectedColor = '#ffadad';
+  //#region Color Selection
+const colorSelection = document.getElementById('color-selection');
+const customColorTrigger = document.getElementById('custom-color-trigger');
+const hiddenCustomColorPicker = document.getElementById('custom-color-picker');
 
-window.openHabitCreationModal = openHabitCreationModal;
-window.closeHabitCreationModal = closeHabitCreationModal;
+hiddenCustomColorPicker.addEventListener('input', (e) => {
+  const pickedColor = e.target.value;
+  customColorTrigger.style.setProperty('--before-bg-color', pickedColor);
+  selectedColor = pickedColor;
+});
+
+colorSelection.addEventListener('click', (e) => {
+  if (e.target.classList.contains('color-option')) {
+
+    document.querySelectorAll('.color-option').forEach(option => option.classList.remove('selected'));
+    e.target.classList.add('selected');
+       
+    if (e.target === customColorTrigger) {
+      selectedColor = customColorTrigger.style.getPropertyValue('--before-bg-color');
+      hiddenCustomColorPicker.click();
+    } else {
+      selectedColor = e.target.style.backgroundColor;
+    }
+  }
+});
+  //#endregion
 
 function openHabitCreationModal() {
-  habitNameInput.value = '';
-  habitDescriptionInput.value = '';
-  habitSymbolInput.value = '';
-  habitFrequencyInput.value = '';
-  habitReminderInput.value = '';
-  selectedColor = '#03fcc6'
-  customColorTrigger.style.setProperty('--before-bg-color', selectedColor);
-  document.querySelectorAll('.color-option').forEach(option => option.classList.remove('selected'));
-  customColorTrigger.classList.add('selected');
-  // set visible
+  resetHabitCreationModal();
   habitCreationModal.style.display = 'flex';
 }
 function closeHabitCreationModal() {
   habitCreationModal.style.display = 'none';
 }
-
-//#region Color Selection
-const colorSelection = document.getElementById('color-selection');
-const customColorTrigger = document.getElementById('custom-color-trigger');
-const customColorPicker = document.getElementById('custom-color-picker');
-
-let selectedColor = '#ffadad';
-
-colorSelection.addEventListener('click', (e) => {
-  if (e.target.classList.contains('color-option')) {
-    // Remove previous selection
-    document.querySelectorAll('.color-option').forEach(option => option.classList.remove('selected'));
-    e.target.classList.add('selected');
-    
-    if (e.target === customColorTrigger) {
-      // Trigger the hidden color picker
-      customColorPicker.click();
-    } else {
-      // Set the selected color to the background color of the clicked option
-      selectedColor = e.target.style.backgroundColor;
-    }
-  }
-});
-
-customColorPicker.addEventListener('input', (e) => {
-  const customColor = e.target.value;
-  customColorTrigger.style.setProperty('--before-bg-color', customColor);
-  selectedColor = customColor;
-});
-//#endregion
-
+function resetHabitCreationModal() {
+  habitNameInput.value = '';
+  habitDescriptionInput.value = '';
+  habitSymbolInput.value = '';
+  habitFrequencyInput.value = '';
+  habitReminderInput.value = '';
+  habitTypeSelection.selectedIndex = 0;
+  selectedColor = '#03fcc6'
+  customColorTrigger.style.setProperty('--before-bg-color', selectedColor);
+  document.querySelectorAll('.color-option').forEach(option => option.classList.remove('selected'));
+  customColorTrigger.classList.add('selected');
+}
 habitCreationModal.addEventListener('submit', (e) => {
   e.preventDefault();
 
@@ -149,197 +141,228 @@ habitCreationModal.addEventListener('submit', (e) => {
   const symbol = habitSymbolInput.value || habitSymbolInput.placeholder;
   const frequency = parseInt(habitFrequencyInput.value) || parseInt(habitFrequencyInput.placeholder);
   const reminder = habitReminderInput.value;
-  const habitType = document.getElementById('habit-type').value; // Get the selected value from the dropdown
-  const infiniteCounter = habitType === 'track-variable'; // true if 'track-variable', false otherwise
+  const infiniteCounter = habitTypeSelection.value === '1';
+  const id = Date.now().toString();
 
-  const newHabit = { name, description, infiniteCounter, color, symbol, frequency, reminder, completion: [] };
+  const newHabit = { id, name, description, infiniteCounter, color, symbol, frequency, reminder, completion: [] };
   addHabit(newHabit);
 
-  // Schedule a daily notification if reminder time is set
   if (reminder) {
     scheduleDailyNotification(newHabit);
   }
-
+  
   closeHabitCreationModal();
   renderHabits();
 });
-
 //#endregion
 
 //#region Habit List
+const habitList = document.getElementById('habit-list');
+
+const SWIPE_THRESHOLD = 50;
+
 function renderHabits() {
-  const habitList = document.getElementById('habit-list');
-  habitList.innerHTML = '';
+  clearHabitList();
 
   Habits.forEach((habit) => {
-    const habitContainer = document.createElement('div');
-    habitContainer.classList.add('habit-container');
-    habitContainer.style.borderColor = habit.color;
+    const habitContainer = createHabitContainer(habit);
 
-    const deleteButton = document.createElement('button');
-    deleteButton.classList.add('delete-button');
-    deleteButton.textContent = 'X';
-    deleteButton.style.display = 'none'; // Hidden initially
+    const deleteButton = createDeleteButton(habit, habitContainer);
+    setupSwipeToDeleteEvents(habitContainer, deleteButton);
+    setupOutsideClickSwipeCancel(habitContainer, deleteButton);
 
-    deleteButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      removeHabit(habit);
-      renderHabits(); // Re-render habits
-    });
+    const habitSymbol = createHabitSymbol(habit);
+    const habitName = createHabitName(habit);
+    const habitProgressButton = createHabitProgressButton(habit);
 
-    //#region Swipe Events
-    let startX, currentX, isSwiping = false;
-
-    //#region For mobile
-    habitContainer.addEventListener('touchstart', (e) => {
-      startX = e.touches[0].clientX;
-      isSwiping = true;
-    });
-    habitContainer.addEventListener('touchmove', (e) => {
-      if (!isSwiping) return;
-      currentX = e.touches[0].clientX;
-      const diffX = currentX - startX;
-      if (diffX < -SWIPE_THRESHOLD) { // Swiping left threshold
-        habitContainer.classList.add('swiped');
-        deleteButton.style.display = 'block'; // Show delete button
-      } else if (diffX > 0) { // Swiping back right
-        habitContainer.classList.remove('swiped');
-        deleteButton.style.display = 'none'; // Hide delete button
-      }
-    });
-    habitContainer.addEventListener('touchend', () => {
-      isSwiping = false;
-    });
-    //#endregion
-    //#region For desktop
-    habitContainer.addEventListener('mousedown', (e) => {
-      startX = e.clientX;
-      isSwiping = true;
-    });
-    habitContainer.addEventListener('mousemove', (e) => {
-      if (!isSwiping) return;
-      currentX = e.clientX;
-      const diffX = currentX - startX;
-      if (diffX < -SWIPE_THRESHOLD) {
-        habitContainer.classList.add('swiped');
-        deleteButton.style.display = 'block';
-      } else if (diffX > 0) {
-        habitContainer.classList.remove('swiped');
-        deleteButton.style.display = 'none';
-      }
-    });
-    habitContainer.addEventListener('mouseup', () => {
-      isSwiping = false;
-    });
-    //#endregion
-
-    // If clicked outside the delete button or habit, reset swipe
-    document.addEventListener('click', (e) => {
-      if (!habitContainer.contains(e.target)) {
-        habitContainer.classList.remove('swiped');
-        deleteButton.style.display = 'none';
-      }
-    });
-    //#endregion
-
-    const habitSymbol = document.createElement('span');
-    habitSymbol.classList.add('habit-symbol');
-    habitSymbol.textContent = habit.symbol;
-    habitSymbol.onclick = () => openHabitDetail(habit);
-
-    const habitName = document.createElement('span');
-    habitName.classList.add('habit-name');
-    habitName.textContent = habit.name;
-    habitName.style.color = habit.color;
-
-    const habitProgress = document.createElement('div');
-    habitProgress.classList.add('habit-progress');
-    habitProgress.style.color = habit.color;
-
-    const habitProgressBar = document.createElement('div');
-    habitProgressBar.classList.add('habit-progress-bar');
-    habitProgress.appendChild(habitProgressBar);
-
-    const checkIcon = document.createElement('span');
-    checkIcon.classList.add('check-icon');
-    habitProgress.appendChild(checkIcon);
-
-    addProgressPressEvents(habit, habitProgress, habitProgressBar, checkIcon);
-    updateCurrentDayProgress(habit, habitProgressBar, checkIcon, 0);
-
-    habitContainer.append(habitSymbol, habitName, habitProgress, deleteButton);
+    habitContainer.append(habitSymbol, habitName, habitProgressButton, deleteButton);
     habitList.appendChild(habitContainer);
+  });
+}
+
+function clearHabitList() {
+  habitList.innerHTML = '';
+}
+function createHabitContainer(habit) {
+  const container = document.createElement('div');
+  container.classList.add('habit-container');
+  container.style.borderColor = habit.color;
+  return container;
+}
+function createDeleteButton(habit, habitContainer) {
+  const button = document.createElement('button');
+  button.classList.add('delete-button');
+  button.textContent = 'X';
+  button.style.display = 'none'; // Initially hidden
+
+  button.addEventListener('click', (e) => {
+    e.stopPropagation();
+    removeHabit(habit);
+    renderHabits();
+  });
+  
+  return button;
+}
+function createHabitSymbol(habit) {
+  const symbol = document.createElement('span');
+  symbol.classList.add('habit-symbol');
+  symbol.textContent = habit.symbol;
+  symbol.onclick = () => openHabitDetail(habit);
+  return symbol;
+}
+function createHabitName(habit) {
+  const name = document.createElement('span');
+  name.classList.add('habit-name');
+  name.textContent = habit.name;
+  name.style.color = habit.color;
+  return name;
+}
+function createHabitProgressButton(habit) {
+  const progressContainer = document.createElement('div');
+  progressContainer.classList.add('habit-progress');
+  progressContainer.style.color = habit.color;
+
+  const progressBar = document.createElement('div');
+  progressBar.classList.add('habit-progress-bar');
+  progressBar.setAttribute('habit-id', habit.id);
+  progressContainer.appendChild(progressBar);
+
+  const checkIcon = document.createElement('span');
+  checkIcon.classList.add('check-icon');
+  checkIcon.setAttribute('habit-id', habit.id);
+  progressContainer.appendChild(checkIcon);
+
+  const today = new Date().toLocaleDateString('en-CA');
+  addProgressButtonPressEvents(today, habit, progressContainer, progressBar, 'bar-horizontal', checkIcon);
+  updateDaysProgress(today, habit, progressBar, 'bar-horizontal', checkIcon, 0);
+
+  return progressContainer;
+}
+function setupSwipeToDeleteEvents(habitContainer, deleteButton) {
+  let startX, currentX, isSwiping = false;
+  // Swipe Events for Mobile
+  habitContainer.addEventListener('touchstart', (e) => startSwipe(e.touches[0].clientX));
+  habitContainer.addEventListener('touchmove', (e) => handleSwipeMove(e.touches[0].clientX, habitContainer, deleteButton));
+  habitContainer.addEventListener('touchend', endSwipe);
+  // Swipe Events for Desktop
+  habitContainer.addEventListener('mousedown', (e) => startSwipe(e.clientX));
+  habitContainer.addEventListener('mousemove', (e) => handleSwipeMove(e.clientX, habitContainer, deleteButton));
+  habitContainer.addEventListener('mouseup', endSwipe);
+
+  function startSwipe(x) {
+    startX = x;
+    isSwiping = true;
+  }
+  function handleSwipeMove(x, container, button) {
+    if (!isSwiping) return;
+    currentX = x;
+    const diffX = currentX - startX;
+    if (diffX < -SWIPE_THRESHOLD) {
+      container.classList.add('swiped');
+      button.style.display = 'block'; // Show delete button
+    } else if (diffX > 0) {
+      container.classList.remove('swiped');
+      button.style.display = 'none'; // Hide delete button
+    }
+  }
+  function endSwipe() {
+    isSwiping = false;
+  }
+}
+function setupOutsideClickSwipeCancel(habitContainer, deleteButton) {
+  document.addEventListener('click', (e) => {
+    if (!habitContainer.contains(e.target)) {
+      habitContainer.classList.remove('swiped');
+      deleteButton.style.display = 'none';
+    }
   });
 }
 //#endregion
 
-//#region Progress Tracking
-let longPressed = false;
+//#region Progress Button Logic
+const LONG_PRESS_THRESHOLD = 350;
 
-function addProgressPressEvents(habit, progressContainer, progressBar, checkIcon) {
+let isLongPressed = false;
+
+function addProgressButtonPressEvents(targetDate, habit, buttonContainer, progressIndicatorElement, indicatorType, statusSymbol) {
   let pressTimer;
 
-  // Handle short and long press events on the progress bar
-  progressContainer.addEventListener('mousedown', () => startPressTimer(habit, progressBar, checkIcon));
-  progressContainer.addEventListener('mouseup', () => clearPressTimer(habit, progressBar, checkIcon, 'short'));
-  progressContainer.addEventListener('mouseleave', () => clearPressTimer()); // Clear if the pointer leaves
-  
-  // Mobile touch equivalent
-  progressContainer.addEventListener('touchstart', () => startPressTimer(habit, progressBar, checkIcon));
-  progressContainer.addEventListener('touchend', () => clearPressTimer(habit, progressBar, checkIcon, 'short'));
-  progressContainer.addEventListener('touchcancel', () => clearPressTimer()); // Clear if touch is interrupted
+  // Mouse events
+  buttonContainer.addEventListener('mousedown', handlePressStart);
+  buttonContainer.addEventListener('mouseup', () => handlePressEnd('short'));
+  buttonContainer.addEventListener('mouseleave', clearPressTimer);
+  // Touch events for mobile
+  buttonContainer.addEventListener('touchstart', handlePressStart);
+  buttonContainer.addEventListener('touchend', () => handlePressEnd('short'));
+  buttonContainer.addEventListener('touchcancel', clearPressTimer);
 
-  // Function to start the press timer for long press detection
-  function startPressTimer(habit, progressBar, checkIcon) {
-    longPressed = false;
-    pressTimer = setTimeout(() => {
-      clearPressTimer(habit, progressBar, checkIcon, 'long');
-    }, LONG_PRESS_THRESHOLD);
+  function handlePressStart() {
+    isLongPressed = false;
+    pressTimer = setTimeout(() => handlePressEnd('long'), LONG_PRESS_THRESHOLD);
   }
+  function handlePressEnd(pressType) {
+    clearPressTimer();
 
-  // Function to clear the timer and trigger respective event based on press type
-  function clearPressTimer(habit, progressBar, checkIcon, pressType = null) {
-    clearTimeout(pressTimer);
-
-    if (pressType === 'short') {
-      if (longPressed) return;
+    if (pressType === 'short' && !isLongPressed) {
       console.log('onProgressShortPress');
-      updateCurrentDayProgress(habit, progressBar, checkIcon, 1);
+      updateDaysProgress(targetDate, habit, progressIndicatorElement, indicatorType, statusSymbol, 1);
     } else if (pressType === 'long') {
-      longPressed = true;
+      isLongPressed = true;
       console.log('onProgressLongPress');
-      updateCurrentDayProgress(habit, progressBar, checkIcon, -1);
+      updateDaysProgress(targetDate, habit, progressIndicatorElement, indicatorType, statusSymbol, -1);
     }
   }
+  function clearPressTimer() {
+    clearTimeout(pressTimer);
+  }
 }
 
-function updateCurrentDayProgress(habit, progressBar, checkIcon, increment) {
-  const currentDate = new Date().toLocaleDateString('en-CA');;
+function updateDaysProgress(targetDate, habit, progressIndicatorElement, indicatorType, satusSymbol, increment) {
+  let daysProgression = habit.completion.find(entry => entry.date === targetDate);
 
-  let todayCompletion = habit.completion.find(entry => entry.date === currentDate);
-  if (!todayCompletion) {
-    todayCompletion = { date: currentDate, count: 0 };
-    habit.completion.push(todayCompletion);
+  if (!daysProgression) {
+    daysProgression = { date: targetDate, count: 0 };
+    habit.completion.push(daysProgression);
   }
 
-  let newCount = Math.max(todayCompletion.count + increment, 0);
-  if (!habit.infiniteCounter) newCount = Math.min(newCount, habit.frequency);
+  daysProgression.count = calculateNewCount(habit, daysProgression.count, increment);
 
-  if (newCount !== todayCompletion.count) {
-    todayCompletion.count = newCount;
-    updateHabit(habit);
+  updateHabit(habit);
+  if (indicatorType === 'bar-horizontal') {
+    updateProgressBar(habit, progressIndicatorElement, true, satusSymbol, daysProgression.count);
   }
-    
-  updateProgressBar(habit, progressBar, checkIcon, todayCompletion.count);
+  else if (indicatorType === 'bar-vertical') {
+    updateProgressBar(habit, progressIndicatorElement, false, satusSymbol, daysProgression.count);
+  }
+  else {
+    throw new Error('Invalid indicator type');
+  }
+
+  if (detailViewActive) {
+    const progressBarInList = document.querySelector(`.habit-progress-bar[habit-id="${habit.id}"]`);
+    const checkIconInList = document.querySelector(`.check-icon[habit-id="${habit.id}"]`);
+    updateProgressBar(habit, progressBarInList, true, checkIconInList, daysProgression.count);
+    updateProgressChartValues();
+  }
 }
 
-function updateProgressBar(habit, progressBar, checkIcon, completionCount) {
+function calculateNewCount(habit, currentCount, increment) {
+  const newCount = Math.max(currentCount + increment, 0);
+  return habit.infiniteCounter ? newCount : Math.min(newCount, habit.frequency);
+}
+
+function updateProgressBar(habit, progressBar, isHorizontal, statusSymbol, completionCount) {
   const completionRatio = completionCount / habit.frequency;
-  const progressWidth = Math.min(completionRatio * 100, 100); // Limit width to 100%
-  const completionMarker = progressWidth == 100 ? '✔' : '🞬'
-  if (habit.infiniteCounter) checkIcon.textContent = completionRatio > 1 ? completionCount : completionMarker;
-  else checkIcon.textContent = completionMarker;
-  progressBar.style.width = `${progressWidth}%`;
+
+  const completionMarker = completionRatio === 1 ? '✔' : '🞬';
+  statusSymbol.textContent = habit.infiniteCounter && completionRatio > 1 ? completionCount : completionMarker;
+
+  const completionPercentage = Math.min(completionRatio * 100, 100);
+  if (isHorizontal) {
+    progressBar.style.width = `${completionPercentage}%`;
+  } else {
+    progressBar.style.height = `${completionPercentage}%`;
+  }
 }
 //#endregion
 
@@ -349,8 +372,11 @@ const detailDescription = document.getElementById('habit-detail-description');
 const calendar = document.getElementById('completion-calendar');
 const habitDetail = document.getElementById('habit-detail');
 const calendarMonthName = document.getElementById('calendar-month-name');
+const progressChart = document.getElementById('habit-progress-chart');
 
 window.closeHabitDetail = closeHabitDetail;
+
+let detailViewActive = false;
 
 let calendarYear;
 let calendarMonth;
@@ -369,6 +395,7 @@ function openHabitDetail(habit) {
   renderCompletionCalendar();
   renderProgressChart();
 
+  detailViewActive = true;
   habitDetail.style.display = 'flex';
 }
 
@@ -390,6 +417,7 @@ document.getElementById('prev-month').addEventListener('click', () => {
 });
 
 function closeHabitDetail() {
+  detailViewActive = false;
   habitDetail.style.display = 'none';
 }
 
@@ -403,16 +431,16 @@ function renderCompletionCalendar() {
 
   if (!KEEP_CALENDAR_DAY_ORDER) {
     const dayOfTheWeek = new Date(calendarYear, calendarMonth, 1).getDay();
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    
     for (let day = dayOfTheWeek; day < dayOfTheWeek + 7; day++) {
       const dayElement = document.createElement('div');
       dayElement.classList.add('calendar-day');
       const dayNumber = document.createElement('span');
       let dayIndex = day
-      if (day >= days.length) {
-        dayIndex = day - days.length
+      if (day >= daysShort.length) {
+        dayIndex = day - daysShort.length
       }
-      dayNumber.textContent = days[dayIndex];
+      dayNumber.textContent = daysShort[dayIndex];
       dayNumber.classList.add('calendar-day-text');
       dayElement.appendChild(dayNumber);
       dayElement.classList.add('in-future')
@@ -423,16 +451,16 @@ function renderCompletionCalendar() {
     let dayOfTheWeek = new Date(calendarYear, calendarMonth, 1).getDay();
     if (dayOfTheWeek == 0) dayOfTheWeek = 6
     else dayOfTheWeek--;
-    const days = ["M", "T", "W", "T", "F", "S", "S"];
+
     for (let day = 0; day < dayOfTheWeek + 7; day++) {
       const dayElement = document.createElement('div');
       dayElement.classList.add('calendar-day');
       const dayNumber = document.createElement('span');
       let dayText;
-      if (day >= days.length) {
+      if (day >= daysSingle.length) {
         dayText = '';
       }
-      else dayText = days[day];
+      else dayText = daysSingle[day];
       dayNumber.textContent = dayText;
       dayNumber.classList.add('calendar-day-text');
       dayElement.appendChild(dayNumber);
@@ -462,88 +490,17 @@ function renderCompletionCalendar() {
     checkIcon.classList.add('calendar-day-check-icon');
     dayElement.appendChild(checkIcon);
 
+    const dateString = date.toLocaleDateString('en-CA');
     if (date > today) dayElement.classList.add('in-future');
-    else addCalendarDayPressEvents(detailHabit, date, dayElement, dayElementProgressBar, checkIcon);
-    updateCalendarDayProgressBar(detailHabit, dayElementProgressBar, checkIcon, completion.count);
+    else addProgressButtonPressEvents(dateString, detailHabit, dayElement, dayElementProgressBar, 'bar-vertical', checkIcon);
+    updateDaysProgress(dateString, detailHabit, dayElementProgressBar, 'bar-vertical', checkIcon, completion.count);
     calendar.appendChild(dayElement);
   }
 }
 
-function addCalendarDayPressEvents(habit, date, progressContainer, progressBar, checkIcon) {
-  let pressTimer;
-
-  // Handle short and long press events on the progress bar
-  progressContainer.addEventListener('mousedown', () => startPressTimer(habit, progressBar, checkIcon));
-  progressContainer.addEventListener('mouseup', () => clearPressTimer(habit, progressBar, checkIcon, 'short'));
-  progressContainer.addEventListener('mouseleave', () => clearPressTimer()); // Clear if the pointer leaves
-  
-  // Mobile touch equivalent
-  progressContainer.addEventListener('touchstart', () => startPressTimer(habit, progressBar, checkIcon));
-  progressContainer.addEventListener('touchend', () => clearPressTimer(habit, progressBar, checkIcon, 'short'));
-  progressContainer.addEventListener('touchcancel', () => clearPressTimer()); // Clear if touch is interrupted
-
-  // Function to start the press timer for long press detection
-  function startPressTimer(habit, progressBar, checkIcon) {
-    longPressed = false;
-    pressTimer = setTimeout(() => {
-      clearPressTimer(habit, progressBar, checkIcon, 'long');
-    }, LONG_PRESS_THRESHOLD);
-  }
-
-  // Function to clear the timer and trigger respective event based on press type
-  function clearPressTimer(habit, progressBar, checkIcon, pressType = null) {
-    clearTimeout(pressTimer);
-
-    if (pressType === 'short') {
-      if (longPressed) return;
-      console.log('onProgressShortPress');
-      changeCompletion(habit, date, progressBar, checkIcon, 1);
-    } else if (pressType === 'long') {
-      longPressed = true;
-      console.log('onProgressLongPress');
-      changeCompletion(habit, date, progressBar, checkIcon, -1);
-    }
-  }
-}
-
-function changeCompletion(habit, date, progressBar, checkIcon, increment) {
-  const dateString = date.toLocaleDateString('en-CA');
-  let entry = habit.completion.find(entry => entry.date === dateString);
-  if (!entry) {
-    habit.completion.push({ date: dateString, count: 0 });
-    entry = habit.completion.find(entry => entry.date === dateString);
-  }
-
-  entry.count = Math.max(entry.count + increment, 0);
-  if (!habit.infiniteCounter) entry.count = Math.min(entry.count, habit.frequency);
-
-  updateCalendarDayProgressBar(habit, progressBar, checkIcon, entry.count);
-  updateHabit(habit);
-  renderHabits(); // not all must
-  //#region update progress chart
-  const completions = habitChartInstance.data.labels.map(date => {
-    const entry = habit.completion.find(e => e.date === date);
-    return entry ? entry.count : 0;
-  });
-  habitChartInstance.data.datasets[0].data = completions;
-  habitChartInstance.update();
-  //#endregion
-}
-function updateCalendarDayProgressBar(habit, progressBar, checkIcon, completionCount) {
-  const completionRatio = completionCount / habit.frequency;
-  const barHeight = Math.min(completionRatio * 100, 100); // Limit width to 100%
-  const progressWidth = Math.min(completionRatio * 100, 100); // Limit width to 100%
-  const completionMarker = progressWidth == 100 ? '✔' : '🞬'
-  if (habit.infiniteCounter) checkIcon.textContent = completionRatio > 1 ? completionCount : completionMarker;
-  else checkIcon.textContent = completionMarker;
-  progressBar.style.height = `${barHeight}%`;
-}
-//#endregion
-
-//#region Progress Chart
-let habitChartInstance;
+let progressChartInstance;
 function renderProgressChart() {
-  const ctx = document.getElementById('habit-progress-chart').getContext('2d');
+  const ctx = progressChart.getContext('2d');
   const dates = Array.from({ length: 20 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - i);
@@ -555,11 +512,11 @@ function renderProgressChart() {
     return entry ? entry.count : 0;
   });
 
-  if (habitChartInstance) {
-    habitChartInstance.destroy();
+  if (progressChartInstance) {
+    progressChartInstance.destroy();
   }
 
-  habitChartInstance = new Chart(ctx, {
+  progressChartInstance = new Chart(ctx, {
     type: 'line',
     data: {
       labels: dates,
@@ -583,7 +540,12 @@ function renderProgressChart() {
     }
   });
 }
+function updateProgressChartValues() {
+  const completions = progressChartInstance.data.labels.map(date => {
+    const entry = detailHabit.completion.find(e => e.date === date);
+    return entry ? entry.count : 0;
+  });
+  progressChartInstance.data.datasets[0].data = completions;
+  progressChartInstance.update();
+}
 //#endregion
-
-//#endregion
-

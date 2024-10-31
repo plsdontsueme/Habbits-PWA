@@ -1,8 +1,21 @@
 // storage.js
 
+//#region Parameter Storage
+export function getBoolParameter(name) {
+    const savedSetting = localStorage.getItem(name);
+    if (savedSetting !== null) {
+        return savedSetting === "true";
+    }
+    else return false;
+}
+export function setParameter(name, value) {
+    localStorage.setItem(name, value.toString());
+}
+//#endregion
+
+//#region Array Storage
 const STORAGE_KEY = "myLargeObjectArray";
 
-// Save an array of objects to localStorage
 export function saveArray(array) {
   console.log("saveArray...");
     if (!Array.isArray(array)) {
@@ -17,7 +30,6 @@ export function saveArray(array) {
     }
 }
 
-// Get the array of objects from localStorage
 export function getArray() {
   console.log("getArray...");
     try {
@@ -29,7 +41,6 @@ export function getArray() {
     }
 }
 
-// Clear the array of objects from localStorage
 export function clearArray() {
     try {
         localStorage.removeItem(STORAGE_KEY);
@@ -37,3 +48,4 @@ export function clearArray() {
         console.error("Failed to clear array from localStorage:", error);
     }
 }
+//#endregion

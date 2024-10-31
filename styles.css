@@ -1,3 +1,19 @@
+:root {
+  --background-color: #121212;
+  --base-level-text-color: #ffffff;
+  --elevated-section-color: #1e1e1e;
+  --elevated-section-text-color: #ffffff;
+  --accent-color: #333;
+  --accent-color-light: #444;
+  --accent-color-light-light: #8b8b8b6e;
+  --semi-transparent-overlay: #8b8b8b6e;
+  --highlight-color: #3b82f6;
+  --restriction-vail-color: rgba(0, 0, 0, 0.8);
+  --modal-box-shadow-color: rgba(0, 0, 0, 0.5);
+  --danger-color: #ff0000;
+  --danger-text-color: #ffffff;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -6,8 +22,8 @@
 
 body {
   font-family: Arial, sans-serif;
-  color: #fff;
-  background-color: #121212;
+  color: var(--base-level-text-color);
+  background-color: var(--background-color);
 
   user-select: none; /* Standard syntax */
   -moz-user-select: none; /* Firefox */
@@ -24,15 +40,15 @@ body, html {
   align-items: center;
   padding: 1rem;
   font-size: 1.5rem;
-  background-color: #1e1e1e;
-  color: #f5f5f5;
+  background-color: var(--elevated-section-color);
+  color: var(--elevated-section-text-color);
 }
 
 #add-habit-btn {
   position: absolute;
   right: 1rem;
   top: 4rem;
-  background: #333;
+  background: var(--accent-color);
   border-radius: 50%;
   padding: 0.5rem 1rem;
   font-size: 1.5rem;
@@ -83,9 +99,9 @@ body, html {
   right: 0;
   width: 50px;
   margin-left: 10px;
-  background: rgba(255, 38, 0, 0.582);
+  background: var(--danger-color);
   border-radius: 10%;
-  color: white;
+  color: var(--danger-text-color);
   border: none;
   font-size: 1.2em;
   cursor: pointer;
@@ -113,7 +129,7 @@ body, html {
 .habit-progress {
   width: 50px;
   height: 25px;
-  background: #333;
+  background: var(--elevated-section-color);
   border-radius: 5px;
   position: relative;
   cursor: pointer;
@@ -132,7 +148,7 @@ body, html {
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 16px;
-  color: #8b8b8b6e;
+  color: var(--semi-transparent-overlay);
 }
 
 
@@ -144,7 +160,7 @@ body, html {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: var(--restriction-vail-color);
   justify-content: center;
   align-items: center;
 }
@@ -157,12 +173,12 @@ body, html {
 }
 
 .modal-content {
-  background: #1e1e1e;
+  background: var(--elevated-section-color);
   padding: 2rem;
   border-radius: 15px;
   max-width: 500px;
   width: 100%;
-  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.5);
+  box-shadow: 0px 4px 20px var(--modal-box-shadow-color);
   position: relative;
 }
 
@@ -170,18 +186,19 @@ button.close-btn {
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #8d8d8d8c;
+  color: var(--accent-color);
   cursor: pointer;
   position: absolute;
   top: 0.1rem;
   left: 0.5rem;
 }
 
+/* Habit Creation Form */
 #habit-creation form label {
   display: flex;
   flex-direction: column;
   margin-bottom: 1rem;
-  color: #a9a9a9;
+  color: var(--accent-color);
   font-size: 1rem;
 }
 
@@ -204,48 +221,6 @@ button.close-btn {
   border-color: #3b82f6;
 }
 
-/* Color Selection Area */
-.color-selection {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-bottom: 1rem;
-}
-
-.color-option {
-  width: 32px;
-  height: 32px;
-  border-radius: 30%;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-  position: relative;
-  display: inline-block;
-}
-
-.color-option.rainbow {
-  background: conic-gradient(
-    red, orange, yellow, green, cyan, blue, violet, red
-  );
-  --before-bg-color: #000000; /* Default color */
-}
-
-.color-option.rainbow::before {
-  content: "";
-  position: absolute;
-  top: 3px; /* Adjust to make the rainbow ring appear around the circle */
-  left: 3px;
-  right: 3px;
-  bottom: 3px;
-  border-radius: 30%;
-  background-color: var(--before-bg-color);
-  z-index: 1;
-}
-
-.color-option.selected {
-  border: 2px solid #3b82f6;
-  transform: scale(1.1);
-}
-
 #habit-creation form button[type="submit"] {
   background: #3b82f6;
   border: none;
@@ -264,6 +239,60 @@ button.close-btn {
   background-color: #2563eb;
 }
 
+/* Color Selection Area */
+.color-selection {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.color-option {
+  width: 32px;
+  height: 32px;
+  border-radius: 30%;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  position: relative;
+  display: inline-block;
+}
+
+.color-option.selected {
+  border: 2px solid #3b82f6;
+  transform: scale(1.1);
+}
+
+.color-option.rainbow {
+  background: conic-gradient(
+    red, orange, yellow, green, cyan, blue, violet, red
+  );
+}
+
+.color-option.rainbow::before {
+  content: "";
+  position: absolute;
+  top: 3px; /* Adjust to make the rainbow ring appear around the circle */
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  border-radius: 30%;
+  background-color: var(--before-bg-color);
+  z-index: 1;
+}
+
+/* Detail View Modal */
+#habit-detail-description {
+  margin-bottom: -1rem; /* Space below the description */
+}
+
+/* Progress Chart */
+#habit-progress-chart {
+  margin-top: 1rem;
+  background-color: #2e2e2e;
+  border-radius: 5px;
+  padding: 1rem;
+}
+
 /* Calendar Month Selector */
 .calendar-month-selector {
   display: flex;
@@ -271,17 +300,17 @@ button.close-btn {
   justify-content: flex-start;
   /*justify-content: center;*/
   padding: 0.3rem;
-  background-color: #1e1e1e;
+  background-color: transparent;
   border-radius: 10px;
   margin: 1rem 0;
   /*margin: 1rem auto;*/
   width: 60%; /* Adjust width as needed */
   max-width: 600px; /* Limit maximum width */
-  border: 2px solid #444; /* Optional border */
+  border: 2px solid var(--accent-color-light); /* Optional border */
 }
 
 .calendar-month-selector button {
-  background: #333;
+  background: var(--accent-color);
   border: none;
   border-radius: 5px;
   color: #f5f5f5;
@@ -292,7 +321,7 @@ button.close-btn {
 }
 
 .calendar-month-selector button:hover {
-  background: #444;
+  background: var(--accent-color-light);
   transform: scale(1.05); /* Slightly enlarge on hover */
 }
 
@@ -321,19 +350,18 @@ button.close-btn {
   justify-content: center;
   cursor: pointer;
   position: relative;
-  background: #333;
+  background: var(--accent-color);
 }
 .calendar-day.in-future {
-  background: #33333300;
+  background: transparent;
 }
 .calendar-day-progress-bar {
-  background-color: #3b82f6;
   width: 100%;
   border-radius: 5px;
   transition: height 0.3s ease-in-out;
 }
 .calendar-day:hover {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--highlight-color);
 }
 .calendar-day.in-future:hover {
   outline: none;
@@ -343,7 +371,7 @@ button.close-btn {
   position: absolute;
   top: 55%;
   right: 50%;
-  color: #8b8b8b6e;
+  color: var(--accent-color-light-light);
   font-weight: bold;
 }
 
@@ -352,19 +380,7 @@ button.close-btn {
   top: 7%;
   right: 10%;
   font-size: 10px;
-  color: #8b8b8b6e;
-}
-
-#habit-detail-description {
-  margin-bottom: -1rem; /* Space below the description */
-}
-
-/* 30-Day Progress Chart */
-#habit-progress-chart {
-  margin-top: 1rem;
-  background-color: #2e2e2e;
-  border-radius: 5px;
-  padding: 1rem;
+  color: var(--accent-color-light-light);
 }
 
 /* Menu Bar */
@@ -374,7 +390,7 @@ button.close-btn {
   width: 100%;
   display: flex;
   justify-content: space-around;
-  background-color: #1e1e1e;
+  background-color: var(--elevated-section-color);
 }
 
 .tab-button {
@@ -400,8 +416,7 @@ button.close-btn {
   align-items: center;
   justify-content: space-between;
   padding: 1rem;
-  background-color: #1e1e1e;
-  border: 2px solid #444;
+  background-color: var(--elevated-section-color);
   border-radius: 8px;
   margin-bottom: 1rem;
 }
@@ -411,11 +426,11 @@ button.close-btn {
   font-size: 1.2rem;
 }
 
-#calendar-order-toggle {
+.settings-toggle {
   width: 40px;
   height: 20px;
   appearance: none;
-  background-color: #333;
+  background-color: var(--accent-color);
   border-radius: 15px;
   cursor: pointer;
   position: relative;
@@ -423,11 +438,11 @@ button.close-btn {
   transition: background-color 0.3s;
 }
 
-#calendar-order-toggle:checked {
-  background-color: #3b82f6;
+.settings-toggle:checked {
+  background-color: var(--highlight-color);
 }
 
-#calendar-order-toggle::before {
+.settings-toggle::before {
   content: "";
   position: absolute;
   top: 2px;
@@ -439,7 +454,7 @@ button.close-btn {
   transition: transform 0.3s;
 }
 
-#calendar-order-toggle:checked::before {
+.settings-toggle:checked::before {
   transform: translateX(20px);
 }
 
