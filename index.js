@@ -3,13 +3,27 @@ import { showSettings, onUnloadSettings } from './settings.js';
 import { showWorkoutManager, onUnloadWorkoutManager } from './workoutManager.js';
 
 
-window.addEventListener("beforeunload", async () => {
-  await onUnloadActiveTab();
+window.addEventListener("beforeunload", () => {
+  onUnloadActiveTab();
+});
+
+window.addEventListener("pagehide", () => {
+  onUnloadActiveTab();
+});
+
+// Use visibilitychange for background/foreground detection
+document.addEventListener("visibilitychange", async () => {
+  if (document.visibilityState === "hidden") {
+    onUnloadActiveTab(); // Save data when tab goes into background
+  }
+  if (document.visibilityState === "visible") {
+    showTab("habit-tracker");  // Load data when tab returns to foreground
+  }
 });
 
 window.showTab = showTab;
 
-async function showTab(tabId) {
+function showTab(tabId) {
   onUnloadActiveTab();
 
   const tabs = document.querySelectorAll('.tab');
@@ -30,15 +44,15 @@ async function showTab(tabId) {
   }
 }
 
-async function onUnloadActiveTab() {
+function onUnloadActiveTab() {
   if (document.getElementById('settings').classList.contains('active')) {
-    await onUnloadSettings();
+    onUnloadSettings();
   }
   else if (document.getElementById('habit-tracker').classList.contains('active')) {
-    await onUnloadHabitTracker();
+    onUnloadHabitTracker();
   }
   else if (document.getElementById('workout-manager').classList.contains('active')) {
-    await onUnloadWorkoutManager();
+    onUnloadWorkoutManager();
   }
 }
 

@@ -35,8 +35,8 @@ button.close-btn {
   color: var(--accent-color);
   cursor: pointer;
   position: absolute;
-  top: 0.1rem;
-  left: 0.5rem;
+  top: 2rem;
+  left: 2rem;
 }
 
 /* Habit Creation Form */

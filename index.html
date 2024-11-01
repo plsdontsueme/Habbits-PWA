@@ -51,7 +51,7 @@
   <!-- Habit Detail View Modal -->
   <div id="habit-detail" class="modal">
     <div class="modal-content">
-      <button class="close-btn" onclick="closeHabitDetail()">🡄</button>
+      <button class="close-btn" onclick="closeHabitDetail()">⬅️</button>
       <div class="modal-header">Habit Details</div>
       <h2 id="habit-detail-name"></h2>
       <p id="habit-detail-description"></p>
@@ -106,6 +106,7 @@
                 <label for="habit-icon">Icon (Choose one or enter a custom one)</label>
                 <input type="text" id="habit-icon" placeholder="E.g., 📖 or H" maxlength="1">
                 <div class="icon-options">
+                    <div class="icon-option">🌎</div>
                     <div class="icon-option">📖</div>
                     <div class="icon-option">🧘</div>
                     <div class="icon-option">🍎</div>
@@ -114,7 +115,6 @@
                     <div class="icon-option">📝</div>
                     <div class="icon-option">🛏️</div>
                     <div class="icon-option">💧</div>
-                    <div class="icon-option">📅</div>
                 </div>
             </div>
             <!-- Habit Color -->
@@ -128,8 +128,8 @@
                   <div class="color-option" style="background-color: #9bf6ff;"></div>
                   <div class="color-option" style="background-color: #a0c4ff;"></div>
               </div>
-              <input type="color" id="hidden-color-picker"/>
             </div></label>
+            <input type="color" id="hidden-color-picker"/>
           </div>
 
           <div id="secondary-creation-input-group">

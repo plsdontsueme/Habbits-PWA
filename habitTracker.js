@@ -16,7 +16,7 @@ let Habits = [];
 let todayDate;
 let todayString;
 
-export async function showHabitTracker() {
+export function showHabitTracker() {
   console.log('showHabitTracker');
 
   todayDate = new Date();
@@ -37,15 +37,15 @@ export async function showHabitTracker() {
   }
   document.getElementById("habit-progress-chart-title").textContent = `Last ${ANALYTICS_TIME_FRAME} days`;
 
-  await loadHabitsAsLocal();
+  loadHabitsAsLocal();
   renderHabits();
 }
-export async function onUnloadHabitTracker() {
-  await saveHabitsAsUTC();
+export function onUnloadHabitTracker() {
+  saveHabitsAsUTC();
 }
 
 //#region Habit Saving / Loading
-async function saveHabitsAsUTC() {
+function saveHabitsAsUTC() {
   const utcHabits = Habits.map(habit => {
     if (habit.completion) {
       habit.completion = habit.completion.map(entry => ({
@@ -55,10 +55,10 @@ async function saveHabitsAsUTC() {
     }
     return habit;
   });
-  await saveArray(utcHabits);
+  saveArray(utcHabits);
 }
-async function loadHabitsAsLocal() {
-  const habits = await getArray();
+function loadHabitsAsLocal() {
+  const habits = getArray();
   Habits = habits.map(habit => {
     if (habit.completion) {
       habit.completion = habit.completion.map(entry => ({
@@ -191,7 +191,7 @@ habitCreationModal.addEventListener('submit', (e) => {
     const name = habitNameInput.value || 'My New Habit';
     const description = habitDescriptionInput.value;
     const color = selectedColor;
-    const icon = habitIconInput.value || '☺️';
+    const icon = habitIconInput.value || '🌎';
     const completionGoal = enableGoalToggle.checked ? (parseInt(habitCompletionGoalInput.value) || 1) : 1;
     const infiniteCounter = goalMinimumToggle.checked;
     const reminder = habitReminderInput.value;

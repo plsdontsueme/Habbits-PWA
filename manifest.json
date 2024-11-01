@@ -4,16 +4,16 @@
     "description": "A simple offline habit tracker",
     "start_url": "./index.html",
     "display": "standalone",
-    "background_color": "#2a2a35",
-    "theme_color": "#ffcc00",
+    "background_color": "#121212",
+    "theme_color": "#333",
     "icons": [
         {
-            "src": "/images/icon-192.png",
+            "src": "./images/icon-192.png",
             "sizes": "192x192",
             "type": "image/png"
         },
         {
-            "src": "/images/icon-512.png",
+            "src": "./images/icon-512.png",
             "sizes": "512x512",
             "type": "image/png"
         }
