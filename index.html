@@ -5,7 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="description" content="BestLife Habit Tracker">
   <title>BestLife</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/habitList.css">
+  <link rel="stylesheet" href="css/modals.css">
+  <link rel="stylesheet" href="css/settings.css">
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
@@ -17,8 +20,8 @@
   <!-- Main Area -->
   <main id="content">
     <section id="habit-tracker" class="tab">
-      <button id="add-habit-btn" onclick="openHabitCreationModal()">+</button>
       <div id="habit-list"></div>
+      <button id="add-habit-btn" onclick="openHabitCreationModal()">+</button>
     </section>
     
     <section id="workout-manager" class="tab">
@@ -29,7 +32,11 @@
       <h2>Settings</h2>
       <div class="settings-item">
         <label for="calendar-order-toggle">Keep Calendar Day Order:</label>
-        <input class="settings-toggle" type="checkbox" id="calendar-order-toggle">
+        <input class="slide-toggle" type="checkbox" id="calendar-order-toggle">
+      </div>
+      <div class="settings-item">
+        <label for="analytics-time-frame">Analytics Time Frame (Days):</label>
+        <input type="number" id="analytics-time-frame" placeholder="Enter a number" min="3">
       </div>
     </section>    
   </main>
@@ -45,66 +52,130 @@
   <div id="habit-detail" class="modal">
     <div class="modal-content">
       <button class="close-btn" onclick="closeHabitDetail()">🡄</button>
+      <div class="modal-header">Habit Details</div>
       <h2 id="habit-detail-name"></h2>
       <p id="habit-detail-description"></p>
-      
-      <!-- Monthly Completion Calendar -->
-      <h3>Completion Calendar</h3>
-      <div class="calendar-month-selector">
-        <button id="prev-month">‹</button>
-        <span id="calendar-month-name"></span>
-        <button id="next-month">›</button>
-      </div>
-      <div id="completion-calendar"></div>
-    
-      <!-- Progress Chart -->
-      <h3>Last 20 Days Progress</h3>
-      <canvas id="habit-progress-chart" width="400" height="200"></canvas>
 
+      <div class="analytics-section">
+          <h3>Progress Analytics</h3>
+          
+          <div class="analytics-metrics">
+              <div class="metric">
+                  <div class="metric-value" id="habit-completed-days">126</div>
+                  <div class="metric-label">Perfect Days</div>
+              </div>
+              <div class="metric">
+                  <div class="metric-value" id="habit-current-streak">7 days</div>
+                  <div class="metric-label">Current Streak</div>
+              </div>
+              <div class="metric">
+                  <div class="metric-value" id="habit-longest-streak">10 days</div>
+                  <div class="metric-label">Longest Streak</div>
+              </div>
+          </div>
+
+          <!-- Progress Chart-->
+          <h3 id="habit-progress-chart-title">Last X Days</h3>
+          <canvas id="habit-progress-chart" width="400" height="200"></canvas>
+
+          <!-- Monthly Completion Calendar -->
+          <h3>Completion Calendar</h3>
+          <div class="calendar-month-selector">
+            <button id="prev-month">‹</button>
+            <span id="calendar-month-name"></span>
+            <button id="next-month">›</button>
+          </div>
+          <div id="completion-calendar"></div>
+      </div>
     </div>  
-  </div>  
+  </div>
 
   <!-- Habit Creation Modal -->
   <div id="habit-creation" class="modal">
-      <div class="modal-content">
-          <button class="close-btn" onclick="closeHabitCreationModal()">🡄</button>
-          <form id="habit-form">
-              <label>Name: <input type="text" id="habit-name" placeholder="Drink Water" autocomplete="off" /></label>
-              <label>Description: <textarea id="habit-description" autocomplete="off"></textarea></label>
-              
-              <!-- Dropdown selection for habit type -->
-              <label>Habit Type:
-                  <select id="habit-type" style="background: #2e2e2e; color: #f5f5f5; border: 1px solid #444; border-radius: 8px; padding: 0.8rem;">
-                      <option value="0">Default</option>
-                      <option value="1">Track Variable Habits</option>
-                  </select>
-              </label>
-
-              <div>
-                  <label>Color:</label>
-                  <div class="color-selection" id="color-selection">
-                      <!-- Preset pastel colors -->
-                      <div class="color-option" style="background-color: #ffadad;"></div>
-                      <div class="color-option" style="background-color: #ffd6a5;"></div>
-                      <div class="color-option" style="background-color: #fdffb6;"></div>
-                      <div class="color-option" style="background-color: #caffbf;"></div>
-                      <div class="color-option" style="background-color: #9bf6ff;"></div>
-                      <div class="color-option" style="background-color: #a0c4ff;"></div>
-                      <!-- Rainbow option for custom color picker -->
-                      <div class="color-option rainbow" id="custom-color-trigger"></div>
-                  </div>
-                  <!-- Hidden color input for custom color selection -->
-                  <input type="color" id="custom-color-picker" style="display: none;" />
+    <div class="modal-content">
+        <div class="modal-header">Create New Habit</div>
+        <form>
+          <div id="primary-creation-input-group">
+            <!-- Habit Name -->
+            <div class="input-group">
+              <label for="habit-name">Habit Name</label>
+              <input type="text" id="habit-name" placeholder="Enter habit name">
+            </div>
+            <!-- Habit Icon -->
+            <div class="input-group">
+                <label for="habit-icon">Icon (Choose one or enter a custom one)</label>
+                <input type="text" id="habit-icon" placeholder="E.g., 📖 or H" maxlength="1">
+                <div class="icon-options">
+                    <div class="icon-option">📖</div>
+                    <div class="icon-option">🧘</div>
+                    <div class="icon-option">🍎</div>
+                    <div class="icon-option">🏃</div>
+                    <div class="icon-option">💪</div>
+                    <div class="icon-option">📝</div>
+                    <div class="icon-option">🛏️</div>
+                    <div class="icon-option">💧</div>
+                    <div class="icon-option">📅</div>
+                </div>
+            </div>
+            <!-- Habit Color -->
+            <div class="input-group">
+              <label>Color<div class="color-options" id="color-selection">
+                  <div class="color-option rainbow" id="custom-color-trigger"></div>
+                  <div class="color-option" style="background-color: #ffadad;"></div>
+                  <div class="color-option" style="background-color: #ffd6a5;"></div>
+                  <div class="color-option" style="background-color: #fdffb6;"></div>
+                  <div class="color-option" style="background-color: #caffbf;"></div>
+                  <div class="color-option" style="background-color: #9bf6ff;"></div>
+                  <div class="color-option" style="background-color: #a0c4ff;"></div>
               </div>
+              <input type="color" id="hidden-color-picker"/>
+            </div></label>
+          </div>
 
-              <label>Symbol: <input type="text" id="habit-symbol" placeholder="☺️" maxlength="5" autocomplete="off" /></label>
-              <label>Goal per Day: <input type="number" id="habit-frequency" placeholder="1" min="1" /></label>
-              <label>Reminder Time: <input type="time" id="habit-reminder" autocomplete="off" /></label>
-              <button type="submit">Create Habit</button>
-          </form>
-      </div>
+          <div id="secondary-creation-input-group">
+            <!-- Habit Description -->
+            <div class="input-group">
+              <label for="habit-description">Description</label>
+              <textarea id="habit-description" placeholder="Enter a brief description"></textarea>
+            </div>
+            <!-- Separator Line for Optional Goal -->
+            <div class="separator"></div>
+            <!-- Optional Goal Toggle -->
+            <div class="toggle-group">
+                <span>Define a Goal</span>
+                <input class="slide-toggle" type="checkbox" id="enable-goal">
+            </div>
+            <div id="goal-input-group" style="display: none;">
+              <div class="input-group">
+                <label for="habit-completion-goal">Daily Goal (completions)</label>
+                <input type="number" id="habit-completion-goal" placeholder="Enter a number" min="1">
+              </div>
+              <div class="toggle-group">
+                <span>Set As Minimum Goal</span>
+                <input class="slide-toggle" type="checkbox" id="goal-minimum-toggle">
+              </div>
+            </div>
+            <!-- Separator Line for Optional Reminder -->
+            <div class="separator"></div>
+            <!-- Reminder Toggle and Time -->
+            <div class="reminder-group">
+                <span>Enable Reminder</span>
+                <input class="slide-toggle" type="checkbox" id="enable-reminder">
+            </div>
+            <div class="input-group" id="reminder-time-group" style="display: none;">
+                <label for="habit-reminder-time">Reminder Time</label>
+                <input type="time" id="habit-reminder-time">
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="button-group">
+              <button class="cancel-button" onclick="closeHabitCreationModal()">Cancel</button>
+              <button type="submit" class="submit-button">Next</button>
+          </div>
+        </form>
+    </div>
   </div>
-
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="app.js"></script>

@@ -6,7 +6,14 @@ export function getBoolParameter(name) {
     if (savedSetting !== null) {
         return savedSetting === "true";
     }
-    else return false;
+    else return null;
+}
+export function getIntParameter(name) {
+    const savedSetting = localStorage.getItem(name);
+    if (savedSetting !== null) {
+        return parseInt(savedSetting);
+    }
+    else return null;
 }
 export function setParameter(name, value) {
     localStorage.setItem(name, value.toString());

@@ -1,0 +1,100 @@
+#add-habit-btn {
+    display: block;
+    margin: 1rem auto;
+    background: var(--elevated-section-color);
+    border-radius: 50%;
+    padding: 0.5rem 1rem;
+    font-size: 1.5rem;
+    color: var(--semi-transparent-overlay);
+    border: none;
+    cursor: pointer;
+}
+
+/* Habit List */
+#habit-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .habit-container {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    margin: 1rem 0;
+    border-radius: 10px;
+    border: 2px solid;
+    background: transparent;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    transition: transform 0.3s ease;
+  }
+  
+  .habit-container.swiped {
+    transform: translateX(-50px); /* Shift left */
+  }
+  
+  .delete-button {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 50px;
+    margin-left: 10px;
+    background: var(--danger-color);
+    border-radius: 10%;
+    color: var(--danger-text-color);
+    border: none;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: left 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .habit-container.swiped .delete-button {
+    left: 100%; /* Slide it in from the right */
+  }
+  
+  .habit-icon {
+    font-size: 2rem;
+    margin-right: 1rem; 
+    cursor: pointer;
+  }
+  
+  .habit-name {
+    font-size: 1.25rem;
+    flex-grow: 1;
+  }
+
+  .habit-streak {
+    font-size: 1.25rem;
+    margin-right: 1rem;
+  }
+  
+  .habit-progress {
+    width: 50px;
+    height: 25px;
+    background: var(--elevated-section-color);
+    border-radius: 5px;
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .habit-progress-bar {
+    background-color: currentColor;
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.5s ease-out;
+  }
+  
+  .check-icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    color: var(--semi-transparent-overlay);
+  }
