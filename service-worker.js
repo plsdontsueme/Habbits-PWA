@@ -1,22 +1,22 @@
 const CACHE_NAME = 'habit-tracker-cache-v1';
 const RESOURCES_TO_CACHE = [
-    '/',
-    '/index.html',
+    './',
+    './index.html',
 
-    '/css/settings.css',
-    '/css/modals.css',
-    '/css/main.css',
-    '/css/habitList.css',
+    './css/settings.css',
+    './css/modals.css',
+    './css/main.css',
+    './css/habitList.css',
 
-    '/index.js',
-    '/habitTracker.js',
-    '/workoutManager.js',
-    '/settings.js',
-    '/app.js',
-    '/notification.js',
-    '/storage.js',
+    './index.js',
+    './habitTracker.js',
+    './workoutManager.js',
+    './settings.js',
+    './app.js',
+    './notification.js',
+    './storage.js',
     
-    '/manifest.json',
+    './manifest.json',
 ];
 
 // Delete old caches
