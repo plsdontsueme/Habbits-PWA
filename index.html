@@ -95,17 +95,16 @@
   <div id="habit-creation" class="modal">
     <div class="modal-content">
         <div class="modal-header">Create New Habit</div>
-        <form>
           <div id="primary-creation-input-group">
             <!-- Habit Name -->
             <div class="input-group">
               <label for="habit-name">Habit Name</label>
-              <input type="text" id="habit-name" placeholder="Enter habit name">
+              <input type="text" id="habit-name" placeholder="Enter habit name" autocomplete="off">
             </div>
             <!-- Habit Icon -->
             <div class="input-group">
                 <label for="habit-icon">Icon (Choose one or enter a custom one)</label>
-                <input type="text" id="habit-icon" placeholder="E.g., 📖 or H" maxlength="1">
+                <input type="text" id="habit-icon" placeholder="E.g., 📖 or H" maxlength="1" autocomplete="off">
                 <div class="icon-options">
                     <div class="icon-option">🌎</div>
                     <div class="icon-option">📖</div>
@@ -139,7 +138,7 @@
             <!-- Habit Description -->
             <div class="input-group">
               <label for="habit-description">Description</label>
-              <textarea id="habit-description" placeholder="Enter a brief description"></textarea>
+              <textarea id="habit-description" placeholder="Enter a brief description" autocomplete="off"></textarea>
             </div>
             <!-- Separator Line for Optional Goal -->
             <div class="separator"></div>
@@ -151,7 +150,7 @@
             <div id="goal-input-group" style="display: none;">
               <div class="input-group">
                 <label for="habit-completion-goal">Daily Goal (completions)</label>
-                <input type="number" id="habit-completion-goal" placeholder="Enter a number" min="1">
+                <input type="number" id="habit-completion-goal" placeholder="Enter a number" min="1" autocomplete="off">
               </div>
               <div class="toggle-group">
                 <span>Set As Minimum Goal</span>
@@ -173,10 +172,9 @@
 
           <!-- Action Buttons -->
           <div class="button-group">
-              <button class="cancel-button" onclick="closeHabitCreationModal()">Cancel</button>
-              <button type="submit" class="submit-button">Next</button>
+              <button class="cancel-button" id="cancel-button">Cancel</button>
+              <button class="submit-button" id="submit-button">Next</button>
           </div>
-        </form>
     </div>
   </div>
 

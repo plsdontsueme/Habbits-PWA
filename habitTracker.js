@@ -91,12 +91,27 @@ function updateHabit(habit) {
 
 //#region Habit Creation Modal
 window.openHabitCreationModal = openHabitCreationModal;
-window.closeHabitCreationModal = closeHabitCreationModal;
 
 const primaryInputGroup = document.getElementById('primary-creation-input-group');
 const secondaryInputGroup = document.getElementById('secondary-creation-input-group');
 let activeInputGroup; 
+function setActiveInputGroup(group) {
+  if (group === secondaryInputGroup) {
+    activeInputGroup = secondaryInputGroup;
+    primaryInputGroup.style.display = 'none';
+    secondaryInputGroup.style.display = 'block';
+    submitButton.textContent = 'Create Habit';
+  }
+  else if (group === primaryInputGroup) {
+    activeInputGroup = primaryInputGroup;
+    primaryInputGroup.style.display = 'block';
+    secondaryInputGroup.style.display = 'none';
+    submitButton.textContent = 'Next';
+  }
+}
 
+const cancelButton = document.getElementById('cancel-button');
+const submitButton = document.getElementById('submit-button');
 const habitNameInput = document.getElementById('habit-name');
 const habitDescriptionInput = document.getElementById('habit-description');
 const habitIconInput = document.getElementById('habit-icon');
@@ -186,9 +201,7 @@ function closeHabitCreationModal() {
   habitCreationModal.style.display = 'none';
 }
 function resetHabitCreationModal() {
-  activeInputGroup = primaryInputGroup;
-  primaryInputGroup.style.display = 'block';
-  secondaryInputGroup.style.display = 'none';
+  setActiveInputGroup(primaryInputGroup);
 
   habitNameInput.value = '';
   habitDescriptionInput.value = '';
@@ -197,19 +210,27 @@ function resetHabitCreationModal() {
   customColorTrigger.style.setProperty('--before-bg-color', selectedColor);
   document.querySelectorAll('.color-option').forEach(option => option.classList.remove('selected'));
   enableGoalToggle.checked = false;
+  goalInputGroup.style.display = 'none';
   habitCompletionGoalInput.value = '';
   goalMinimumToggle.checked = false;
   enableReminderToggle.checked = false;
+  reminderTimeGroup.style.display = 'none';
   habitReminderInput.value = '';
 }
-habitCreationModal.addEventListener('submit', (e) => {
+
+cancelButton.addEventListener('click', () => {
+  if(activeInputGroup === primaryInputGroup) {
+    closeHabitCreationModal();
+  }
+  else if (activeInputGroup === secondaryInputGroup) {
+    setActiveInputGroup(primaryInputGroup);
+  }
+})
+submitButton.addEventListener('click', (e) => {
   e.preventDefault();
 
   if (activeInputGroup === primaryInputGroup) {
-    activeInputGroup = secondaryInputGroup;
-    primaryInputGroup.style.display = 'none';
-    secondaryInputGroup.style.display = 'block';
-    e.submitter.textContent = 'Create Habit';
+    setActiveInputGroup(secondaryInputGroup);
   }
   else if (activeInputGroup === secondaryInputGroup) {
     const name = habitNameInput.value || 'My New Habit';
@@ -229,7 +250,7 @@ habitCreationModal.addEventListener('submit', (e) => {
     }
     
     closeHabitCreationModal();
-    e.submitter.textContent = 'Next';
+    submitButton.textContent = 'Next';
     renderHabits();
   }
 });
