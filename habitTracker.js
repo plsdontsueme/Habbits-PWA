@@ -132,21 +132,42 @@ habitIconInput.addEventListener('input', () => {
 // Color Selection
 const colorSelection = document.getElementById('color-selection');
 const customColorTrigger = document.getElementById('custom-color-trigger');
-const hiddenColorPicker = document.getElementById('hidden-color-picker');
-hiddenColorPicker.addEventListener('input', (e) => {
-  const pickedColor = e.target.value;
+// Initialize Pickr
+const pickr = Pickr.create({
+  el: '#hidden-color-picker',
+  theme: 'monolith', // Available themes: 'classic', 'monolith', 'nano'
+  default: selectedColor,
+  components: {
+    preview: true,
+    opacity: false,
+    hue: true,
+    interaction: {
+      input: true,
+      clear: false,
+      save: true
+    }
+  }
+});
+// Listen for color changes and save them
+pickr.on('save', (color) => {
+  const pickedColor = color.toHEXA().toString();
   customColorTrigger.style.setProperty('--before-bg-color', pickedColor);
   selectedColor = pickedColor;
+  pickr.hide(); // Hide the picker after selection
 });
+// Event listener for color selection
 colorSelection.addEventListener('click', (e) => {
   if (e.target.classList.contains('color-option')) {
-
+    // Remove 'selected' class from other options
     document.querySelectorAll('.color-option').forEach(option => option.classList.remove('selected'));
-       
+
     if (e.target === customColorTrigger) {
+      // Trigger Pickr if custom color option is clicked
       selectedColor = customColorTrigger.style.getPropertyValue('--before-bg-color');
-      hiddenColorPicker.click();
+      pickr.setColor(selectedColor);
+      pickr.show();
     } else {
+      // Standard color option was clicked
       e.target.classList.add('selected');
       selectedColor = e.target.style.backgroundColor;
       customColorTrigger.style.setProperty('--before-bg-color', selectedColor);

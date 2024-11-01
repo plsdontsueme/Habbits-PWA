@@ -161,9 +161,17 @@ textarea {
 }
 
 /* Color Selection Area */
-#hidden-color-picker {
-  display: none;
+.pcr-app {
+    background-color: var(--elevated-section-color) !important; /* Darker background */
+    color: #ffffff !important; /* White text */
 }
+.pcr-color-picker .pcr-button {
+    background-color: var(--accent-color) !important; /* Button background */
+}
+.pcr-color-picker .pcr-interaction {
+    color: #ffffff !important; /* Text color */
+}
+
 
 .color-options {
   display: flex;
