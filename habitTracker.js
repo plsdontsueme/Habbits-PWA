@@ -206,6 +206,7 @@ function resetHabitCreationModal() {
   habitNameInput.value = '';
   habitDescriptionInput.value = '';
   habitIconInput.value = '';
+  iconOptions.forEach(opt => opt.classList.remove('selected'));
   selectedColor = '#fff'
   customColorTrigger.style.setProperty('--before-bg-color', selectedColor);
   document.querySelectorAll('.color-option').forEach(option => option.classList.remove('selected'));
