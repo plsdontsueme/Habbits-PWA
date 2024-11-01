@@ -1,5 +1,5 @@
 
-import { scheduleDailyNotification, cancelNotification } from './notification.js';
+import { scheduleDailyNotification, cancelNotification, requestNotificationPermission } from './notification.js';
 import { saveArray, getArray, getBoolParameter, getIntParameter, setParameter } from './storage.js';
 
 let KEEP_CALENDAR_DAY_ORDER;
@@ -115,6 +115,9 @@ enableGoalToggle.addEventListener('change', () => {
 // Toggle Reminder Time Input
 const reminderTimeGroup = document.getElementById('reminder-time-group');
 enableReminderToggle.addEventListener('change', () => {
+    if (enableReminderToggle.checked) {
+      requestNotificationPermission();
+    }
     reminderTimeGroup.style.display = enableReminderToggle.checked ? 'block' : 'none';
 });
 // Icon Selection
