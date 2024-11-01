@@ -17,47 +17,48 @@ const RESOURCES_TO_CACHE = [
     './storage.js',
     
     './manifest.json',
+    './images/notification-icon.png',
 ];
 
-// Delete old caches
-self.addEventListener('activate', (event) => {
-    event.waitUntil(
-      caches.keys().then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME) {
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      })
-    );
-  });
-
-// Install event: cache all files
+// Install event: cache resources
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-      caches.open(CACHE_NAME).then((cache) => {
-        return cache.addAll(RESOURCES_TO_CACHE);
-      })
-    );
-  });
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      return cache.addAll(RESOURCES_TO_CACHE);
+    })
+  );
+  self.skipWaiting(); // Activate worker immediately after install
+});
 
-// Fetch event: serve cached content when offline
+// Activate event: clean up old caches
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});
+
+// Fetch event: serve cached files when offline
 self.addEventListener('fetch', (event) => {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          // If the request is successful, update the cache
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, response.clone());
-            return response;
-          });
-        })
-        .catch(() => {
-          // If network fetch fails, return the cached version
-          return caches.match(event.request);
-        })
-    );
-  });
-  
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        // Update the cache with the latest response
+        return caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, response.clone());
+          return response;
+        });
+      })
+      .catch(() => {
+        // If network fetch fails, return the cached version
+        return caches.match(event.request);
+      })
+  );
+});
