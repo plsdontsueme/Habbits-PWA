@@ -390,55 +390,63 @@ function setupOutsideClickSwipeCancel(habitContainer, deleteButton) {
 
 //#region Progression Logic
 const LONG_PRESS_THRESHOLD = 350; // Time in ms for a long press
-const EXTENDED_LONG_PRESS_THRESHOLD = 700; // Time in ms for an extended long press
-
-let isLongPressed = false;
+const EXTENDED_LONG_PRESS_THRESHOLD = 1005; // Time in ms for an extended long press
 
 function addProgressButtonPressEvents(targetDate, habit, buttonContainer, progressIndicatorElement, indicatorType, statusSymbol) {
-  let pressTimer;
-  let extendedPressTimer;
+  let longPressTimer;
+  let longerPressTimer;
+  let isLongPressTriggered = false;
+  let isLongerPressTriggered = false;
 
-  // Mouse events
-  buttonContainer.addEventListener('mousedown', handlePressStart);
-  buttonContainer.addEventListener('mouseup', () => handlePressEnd('short'));
-  buttonContainer.addEventListener('mouseleave', clearPressTimers);
-  
-  // Touch events for mobile
-  buttonContainer.addEventListener('touchstart', handlePressStart);
-  buttonContainer.addEventListener('touchend', () => handlePressEnd('short'));
-  buttonContainer.addEventListener('touchcancel', clearPressTimers);
+  buttonContainer.addEventListener("mousedown", startPress);
+  buttonContainer.addEventListener("touchstart", startPress);
 
-  function handlePressStart() {
-    isLongPressed = false;
-    pressTimer = setTimeout(() => handleLongPress(), LONG_PRESS_THRESHOLD);
+  buttonContainer.addEventListener("mouseup", endPress);
+  buttonContainer.addEventListener("touchend", endPress);
+
+  // Starts the press timer
+  function startPress(e) {
+      e.preventDefault(); // Prevents multiple events from triggering
+      
+      // Reset flags
+      isLongPressTriggered = false;
+      isLongerPressTriggered = false;
+
+      // Set a timer for long press (500ms)
+      longPressTimer = setTimeout(() => {
+          console.log("Long Press Detected!");
+          updateDaysProgress(targetDate, habit, progressIndicatorElement, indicatorType, statusSymbol, -1);
+          isLongPressTriggered = true;
+      }, LONG_PRESS_THRESHOLD);
+
+      // Set a timer for longer press (1500ms)
+      longerPressTimer = setTimeout(() => {
+          console.log("Longer Press Detected!");
+          updateDaysProgress(targetDate, habit, progressIndicatorElement, indicatorType, statusSymbol, -1000);
+          isLongerPressTriggered = true;
+      }, EXTENDED_LONG_PRESS_THRESHOLD);
   }
 
-  function handleLongPress() {
-    isLongPressed = true;
-    console.log('onProgressLongPress');
-    updateDaysProgress(targetDate, habit, progressIndicatorElement, indicatorType, statusSymbol, -1);
-
-    // Start timer for extended long press
-    extendedPressTimer = setTimeout(() => handleExtendedLongPress(), EXTENDED_LONG_PRESS_THRESHOLD);
-  }
-
-  function handleExtendedLongPress() {
-    console.log('onProgressExtendedLongPress');
-    updateDaysProgress(targetDate, habit, progressIndicatorElement, indicatorType, statusSymbol, -1000);
-  }
-
-  function handlePressEnd(pressType) {
-    clearPressTimers();
-
-    if (pressType === 'short' && !isLongPressed) {
-      console.log('onProgressShortPress');
+  // Ends the press and determines if it was a short press
+  function endPress(e) {
+      e.preventDefault();
+      
+      // If long or longer press was triggered, do nothing
+      if (isLongPressTriggered || isLongerPressTriggered) {
+          clearTimers();
+          return;
+      }
+      
+      // If neither long nor longer press triggered, it's a short press
+      console.log("Short Press Detected!");
       updateDaysProgress(targetDate, habit, progressIndicatorElement, indicatorType, statusSymbol, 1);
-    }
+      clearTimers();
   }
 
-  function clearPressTimers() {
-    clearTimeout(pressTimer);
-    clearTimeout(extendedPressTimer);
+  // Clears all timers
+  function clearTimers() {
+      clearTimeout(longPressTimer);
+      clearTimeout(longerPressTimer);
   }
 }
 
