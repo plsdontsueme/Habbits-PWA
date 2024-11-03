@@ -509,7 +509,7 @@ function updateProgressBar(habit, progressBar, indicatorType, statusSymbol, comp
     progressBar.style.height = `${completionPercentage}%`;
   }
   else if (indicatorType === 'dashboard-habit') {
-    completionMarker === 1 ? '✔' : '+';
+    completionMarker = completionRatio === 1 ? '✔' : '+';
 
     if (ALTERNATE_PROGRESS_BUTTON) 
       animateProgress(progressBar, completionPercentage);
