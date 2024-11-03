@@ -74,7 +74,7 @@
     margin-right: 1rem;
   }
   
-  .habit-progress {
+  .habit-progress-container {
     width: 60px;
     height: 50px;
     background: var(--elevated-section-color);
@@ -89,12 +89,45 @@
     border-radius: 5px;
     transition: width 0.5s ease-out;
   }
+
+  .habit-progress-container-circular {
+    width: 50px;
+    height: 50px;
+    background: var(--elevated-section-color);
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+  }
+
+  .habit-progress-bar-circular {
+    background: conic-gradient(
+        currentColor 0deg,
+        currentColor var(--progress-angle, 0deg),
+        transparent var(--progress-angle, 0deg)
+      );
+    height: 100%;
+    width: 100%;
+    border-radius: 50%;
+  }
+  
+  .habit-progress-bar-circular::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 35px;
+    height: 35px;
+    background: var(--elevated-section-color);
+    border-radius: 50%;
+  }
   
   .check-icon {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 16px;
+    font-size: 20px;
+    font-weight: bold;
     color: var(--semi-transparent-overlay);
   }

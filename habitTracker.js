@@ -3,7 +3,8 @@ import { scheduleDailyNotification, cancelNotification, requestNotificationPermi
 import { saveArray, getArray, getBoolParameter, getIntParameter, setParameter } from './storage.js';
 
 let KEEP_CALENDAR_DAY_ORDER;
-let ANALYTICS_TIME_FRAME; 
+let ANALYTICS_TIME_FRAME;
+let ALTERNATE_PROGRESS_BUTTON;
 
 const months = [
   "January", "February", "March", "April", "May", "June",
@@ -26,16 +27,22 @@ export function showHabitTracker() {
   document.getElementById('current-date').textContent = todayDate.toLocaleDateString('de-DE', options);
 
   KEEP_CALENDAR_DAY_ORDER = getBoolParameter("KEEP_CALENDAR_DAY_ORDER");
-  if (!KEEP_CALENDAR_DAY_ORDER) {
+  if (KEEP_CALENDAR_DAY_ORDER === null) {
     KEEP_CALENDAR_DAY_ORDER = false;
     setParameter("KEEP_CALENDAR_DAY_ORDER", KEEP_CALENDAR_DAY_ORDER);
   }
   ANALYTICS_TIME_FRAME = getIntParameter("ANALYTICS_TIME_FRAME");
-  if (!ANALYTICS_TIME_FRAME) {
+  if (ANALYTICS_TIME_FRAME === null) {
     ANALYTICS_TIME_FRAME = 20;
     setParameter("ANALYTICS_TIME_FRAME", ANALYTICS_TIME_FRAME);
   }
   document.getElementById("habit-progress-chart-title").textContent = `Last ${ANALYTICS_TIME_FRAME} days`;
+
+  ALTERNATE_PROGRESS_BUTTON = getBoolParameter("ALTERNATE_PROGRESS_BUTTON");
+  if (ALTERNATE_PROGRESS_BUTTON === null) {
+    ALTERNATE_PROGRESS_BUTTON = true;
+    setParameter("ALTERNATE_PROGRESS_BUTTON", ALTERNATE_PROGRESS_BUTTON);
+  }
 
   loadHabitsAsLocal();
   renderHabits();
@@ -329,11 +336,11 @@ function createHabitStreak(habit) {
 }
 function createHabitProgressButton(habit) {
   const progressContainer = document.createElement('div');
-  progressContainer.classList.add('habit-progress');
+  progressContainer.classList.add(ALTERNATE_PROGRESS_BUTTON ? 'habit-progress-container-circular' : 'habit-progress-container');
   progressContainer.style.color = habit.color;
 
   const progressBar = document.createElement('div');
-  progressBar.classList.add('habit-progress-bar');
+  progressBar.classList.add(ALTERNATE_PROGRESS_BUTTON ? 'habit-progress-bar-circular' : 'habit-progress-bar');
   progressBar.setAttribute('habit-id', habit.id);
   progressContainer.appendChild(progressBar);
 
@@ -342,8 +349,8 @@ function createHabitProgressButton(habit) {
   checkIcon.setAttribute('habit-id', habit.id);
   progressContainer.appendChild(checkIcon);
 
-  addProgressButtonPressEvents(todayString, habit, progressContainer, progressBar, 'bar-horizontal', checkIcon);
-  updateDaysProgress(todayString, habit, progressBar, 'bar-horizontal', checkIcon, 0);
+  addProgressButtonPressEvents(todayString, habit, progressContainer, progressBar, 'dashboard-habit', checkIcon);
+  updateDaysProgress(todayString, habit, progressBar, 'dashboard-habit', checkIcon, 0);
 
   return progressContainer;
 }
@@ -389,8 +396,8 @@ function setupOutsideClickSwipeCancel(habitContainer, deleteButton) {
 //#endregion
 
 //#region Progression Logic
-const LONG_PRESS_THRESHOLD = 350; // Time in ms for a long press
-const EXTENDED_LONG_PRESS_THRESHOLD = 1005; // Time in ms for an extended long press
+const LONG_PRESS_THRESHOLD = 320; // Time in ms for a long press
+const EXTENDED_LONG_PRESS_THRESHOLD = 1020; // Time in ms for an extended long press
 
 function addProgressButtonPressEvents(targetDate, habit, buttonContainer, progressIndicatorElement, indicatorType, statusSymbol) {
   let longPressTimer;
@@ -474,9 +481,9 @@ function updateDaysProgress(targetDate, habit, progressIndicatorElement, indicat
 
     if (detailViewActive) {
       if(targetDate === todayString) {
-        const progressBarInList = document.querySelector(`.habit-progress-bar[habit-id="${habit.id}"]`);
+        const progressBarInList = ALTERNATE_PROGRESS_BUTTON ? document.querySelector(`.habit-progress-bar-circular[habit-id="${habit.id}"]`) : document.querySelector(`.habit-progress-bar[habit-id="${habit.id}"]`);
         const checkIconInList = document.querySelector(`.check-icon[habit-id="${habit.id}"]`);
-        updateProgressBar(habit, progressBarInList, true, checkIconInList, dayProgressEntry.count);
+        updateProgressBar(habit, progressBarInList, 'dashboard-habit', checkIconInList, dayProgressEntry.count);
       }
       updateProgressAnalytics();
       updateProgressChartValues();
@@ -484,15 +491,7 @@ function updateDaysProgress(targetDate, habit, progressIndicatorElement, indicat
   }
 
   // render progress indicator
-  if (indicatorType === 'bar-horizontal') {
-    updateProgressBar(habit, progressIndicatorElement, true, statusSymbol, newCount);
-  }
-  else if (indicatorType === 'bar-vertical') {
-    updateProgressBar(habit, progressIndicatorElement, false, statusSymbol, newCount);
-  }
-  else {
-    throw new Error('Invalid indicator type');
-  }
+  updateProgressBar(habit, progressIndicatorElement, indicatorType, statusSymbol, newCount);
 }
 
 function calculateNewCount(habit, currentCount, increment) {
@@ -500,19 +499,59 @@ function calculateNewCount(habit, currentCount, increment) {
   return habit.infiniteCounter ? newCount : Math.min(newCount, habit.completionGoal);
 }
 
-function updateProgressBar(habit, progressBar, isHorizontal, statusSymbol, completionCount) {
+function updateProgressBar(habit, progressBar, indicatorType, statusSymbol, completionCount) {
   const completionRatio = completionCount / habit.completionGoal;
 
   const completionMarker = completionRatio === 1 ? '✔' : '+';
   statusSymbol.textContent = habit.infiniteCounter && completionRatio > 1 ? completionCount : completionMarker;
 
   const completionPercentage = Math.min(completionRatio * 100, 100);
-  if (isHorizontal) {
-    progressBar.style.width = `${completionPercentage}%`;
-  } else {
+  if (indicatorType === 'calendar-day') {
     progressBar.style.height = `${completionPercentage}%`;
   }
+  else if (indicatorType === 'dashboard-habit') {
+    if (ALTERNATE_PROGRESS_BUTTON) 
+      animateProgress(progressBar, completionPercentage);
+    else 
+    {
+      progressBar.style.width = `${completionPercentage}%`;
+    }
+  }
+  else {
+    throw new Error('Invalid indicator type');
+  }
 }
+
+function animateProgress(progressRing, targetProgress) {
+  const easeFactor = 0.01; // Controls the easing effect
+  let currentProgress = new Number(progressRing.style.getPropertyValue('--progress-angle').slice(0, -3)) / 360 * 100;
+
+  function step() {
+    // Calculate the difference between the current and target progress
+    const progressDifference = targetProgress - currentProgress;
+
+    // Apply easing by updating current progress based on the difference
+    currentProgress += progressDifference * easeFactor;
+
+    // Update the CSS custom property for the current angle
+    const angle = (currentProgress / 100) * 360;
+    progressRing.style.setProperty('--progress-angle', `${angle}deg`);
+
+    // If the difference is small enough, stop the animation
+    if (Math.abs(progressDifference) < 0.5) {
+      currentProgress = targetProgress;
+      progressRing.style.setProperty('--progress-angle', `${(targetProgress / 100) * 360}deg`);
+      return; // Stop the animation
+    }
+
+    // Request the next animation frame
+    requestAnimationFrame(step);
+  }
+
+  // Start the animation
+  requestAnimationFrame(step);
+}
+
 //#endregion
 
 //#region Habit Detail View
@@ -668,8 +707,8 @@ function renderCompletionCalendar() {
 
     const dateString = date.toLocaleDateString('en-CA');
     if (date > todayDate) dayElement.classList.add('in-future');
-    else addProgressButtonPressEvents(dateString, detailHabit, dayElement, dayElementProgressBar, 'bar-vertical', checkIcon);
-    updateProgressBar(detailHabit, dayElementProgressBar, false, checkIcon, completion.count);
+    else addProgressButtonPressEvents(dateString, detailHabit, dayElement, dayElementProgressBar, 'calendar-day', checkIcon);
+    updateProgressBar(detailHabit, dayElementProgressBar, 'calendar-day', checkIcon, completion.count);
     calendar.appendChild(dayElement);
   }
 }
