@@ -13,7 +13,7 @@ const months = [
 const daysSingle = ["M", "T", "W", "T", "F", "S", "S"];
 const daysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-let Habits = [];
+let Habits;
 let todayDate;
 let todayString;
 
@@ -53,7 +53,31 @@ export function onUnloadHabitTracker() {
 
 //#region Habit Saving / Loading
 function saveHabitsAsUTC() {
-  const utcHabits = Habits.map(habit => {
+  let utcHabits = {uncategorized: [], categories: []};
+  utcHabits.uncategorized = toUTC(Habits.uncategorized);
+  Habits.categories.forEach(category => {
+    const utcCategory = {name: category.name, habits: toUTC(category.habits)};
+    utcHabits.categories.push(utcCategory);
+  });
+  const dataArray = [utcHabits];
+  saveArray(dataArray);
+}
+
+function loadHabitsAsLocal() {
+  Habits = {uncategorized: [], categories: []};
+  let utcHabits = getArray();
+  if(utcHabits) {
+    utcHabits = utcHabits[0];
+    Habits.uncategorized = toLocal(utcHabits.uncategorized);
+    utcHabits.categories.forEach(category => {
+      const localCategory = {name: category.name, habits: toLocal(category.habits)};
+      Habits.categories.push(localCategory);
+    });
+  }
+}
+
+function toUTC(habitsArray) {
+  const utcHabits = habitsArray.map(habit => {
     if (habit.completion) {
       habit.completion = habit.completion.map(entry => ({
         ...entry,
@@ -62,11 +86,10 @@ function saveHabitsAsUTC() {
     }
     return habit;
   });
-  saveArray(utcHabits);
+  return utcHabits;
 }
-function loadHabitsAsLocal() {
-  const habits = getArray();
-  Habits = habits.map(habit => {
+function toLocal(habitsArray) {
+  const localHabits = habitsArray.map(habit => {
     if (habit.completion) {
       habit.completion = habit.completion.map(entry => ({
         ...entry,
@@ -75,25 +98,83 @@ function loadHabitsAsLocal() {
     }
     return habit;
   });
+  return localHabits;
 }
 //#endregion
 
 //#region Habit Array Manipulation
+function addCategory(name) {
+  Habits.categories.push({name: name, renderContents: true, habits: []});
+}
+function removeCategory(name) {
+  const category = Habits.categories.find(c => c.name === category);
+  category.habits.forEach(habit => {
+    cancelNotification(habit)
+  });
+  Habits.categories = Habits.categories.filter(c => c.name !== name);
+}
+
 function addHabit(habit) {
-  Habits.push(habit);
+  if (!habit.category) Habits.uncategorized.push(habit);
+  else {
+    const category = Habits.categories.find(c => c.name === habit.category);
+    if (!category) throw new Error(`Category not found ${habit.category}`);
+    category.habits.push(habit);
+  }
 }
 function removeHabit(habit) {
   cancelNotification(habit)
-  Habits = Habits.filter(h => h !== habit);
-}
-function updateHabit(habit) {
-  const index = Habits.findIndex(h => h === habit);
-  if (index !== -1) {
-    Habits[index] = habit;
-  } else {
-    throw new Error(`Habit not found ${habit}`);
+  if (!habit.category) Habits.uncategorized = Habits.uncategorized.filter(h => h !== habit);
+  else {
+    const category = Habits.categories.find(c => c.name === habit.category);
+    category.habits = category.habits.filter(h => h !== habit);
   }
 }
+function updateHabit(habit) {
+  if (!habit.category) {
+    const index = Habits.uncategorized.findIndex(h => h === habit);
+    if (index !== -1) {
+      Habits.uncategorized[index] = habit;
+    } else {
+      throw new Error(`Habit not found ${habit}`);
+    }
+  }
+  else {
+    const category = Habits.categories.find(c => c.name === habit.category);
+    const index = category.habits.findIndex(h => h === habit);
+    if (index !== -1) {
+      category.habits[index] = habit;
+    } else {
+      throw new Error(`Habit not found ${habit}`);
+    }
+  }
+}
+//#endregion
+
+//#region Category Creation Modal
+window.openCategoryCreationModal = openCategoryCreationModal;
+function openCategoryCreationModal() {
+  resetCategoryCreationModal();
+  categoryCreationModal.style.display = 'flex';
+}
+function closeCategoryCreationModal() {
+  categoryCreationModal.style.display = 'none';
+}
+function resetCategoryCreationModal() {
+  categoryNameInput.value = '';
+}
+
+const categoryCreationModal = document.getElementById('category-creation');
+const categoryCreationCancelButton = document.getElementById('category-creation-cancel-button');
+const categoryCreationSubmitButton = document.getElementById('category-creation-submit-button');
+const categoryNameInput = document.getElementById('category-name');
+
+categoryCreationCancelButton.addEventListener('click', closeCategoryCreationModal);
+categoryCreationSubmitButton.addEventListener('click', (e) => {
+  addCategory(categoryNameInput.value || 'My New Category');
+  renderHabits();
+  closeCategoryCreationModal();
+});
 //#endregion
 
 //#region Habit Creation Modal
@@ -102,23 +183,24 @@ window.openHabitCreationModal = openHabitCreationModal;
 const primaryInputGroup = document.getElementById('primary-creation-input-group');
 const secondaryInputGroup = document.getElementById('secondary-creation-input-group');
 let activeInputGroup; 
+let targetCategory;
 function setActiveInputGroup(group) {
   if (group === secondaryInputGroup) {
     activeInputGroup = secondaryInputGroup;
     primaryInputGroup.style.display = 'none';
     secondaryInputGroup.style.display = 'block';
-    submitButton.textContent = 'Create Habit';
+    habitCreationSubmitButton.textContent = 'Create Habit';
   }
   else if (group === primaryInputGroup) {
     activeInputGroup = primaryInputGroup;
     primaryInputGroup.style.display = 'block';
     secondaryInputGroup.style.display = 'none';
-    submitButton.textContent = 'Next';
+    habitCreationSubmitButton.textContent = 'Next';
   }
 }
 
-const cancelButton = document.getElementById('cancel-button');
-const submitButton = document.getElementById('submit-button');
+const habitCreationCancelButton = document.getElementById('habit-creation-cancel-button');
+const habitCreationSubmitButton = document.getElementById('habit-creation-submit-button');
 const habitNameInput = document.getElementById('habit-name');
 const habitDescriptionInput = document.getElementById('habit-description');
 const habitIconInput = document.getElementById('habit-icon');
@@ -200,8 +282,9 @@ colorSelection.addEventListener('click', (e) => {
   }
 });
 
-function openHabitCreationModal() {
+function openHabitCreationModal(creationTargetCategory = null) {
   resetHabitCreationModal();
+  targetCategory = creationTargetCategory;
   habitCreationModal.style.display = 'flex';
 }
 function closeHabitCreationModal() {
@@ -226,7 +309,7 @@ function resetHabitCreationModal() {
   habitReminderInput.value = '';
 }
 
-cancelButton.addEventListener('click', () => {
+habitCreationCancelButton.addEventListener('click', () => {
   if(activeInputGroup === primaryInputGroup) {
     closeHabitCreationModal();
   }
@@ -234,7 +317,7 @@ cancelButton.addEventListener('click', () => {
     setActiveInputGroup(primaryInputGroup);
   }
 })
-submitButton.addEventListener('click', (e) => {
+habitCreationSubmitButton.addEventListener('click', (e) => {
   e.preventDefault();
 
   if (activeInputGroup === primaryInputGroup) {
@@ -249,8 +332,9 @@ submitButton.addEventListener('click', (e) => {
     const infiniteCounter = goalMinimumToggle.checked;
     const reminder = habitReminderInput.value;
     const id = Date.now().toString();
+    const category = targetCategory;
 
-    const newHabit = { id, name, description, infiniteCounter, color, icon, completionGoal, reminder, completion: [], completedDays: 0, longestStreak: 0 };
+    const newHabit = { id, category, name, description, infiniteCounter, color, icon, completionGoal, reminder, completion: [], completedDays: 0, longestStreak: 0 };
     addHabit(newHabit);
 
     if (reminder) {
@@ -258,7 +342,7 @@ submitButton.addEventListener('click', (e) => {
     }
     
     closeHabitCreationModal();
-    submitButton.textContent = 'Next';
+    habitCreationSubmitButton.textContent = 'Next';
     renderHabits();
   }
 });
@@ -272,25 +356,73 @@ const DELETE_SWIPE_THRESHOLD = 80;
 function renderHabits() {
   clearHabitList();
 
-  Habits.forEach((habit) => {
-    const habitContainer = createHabitContainer(habit);
-
-    const deleteButton = createDeleteButton(habit, habitContainer);
-    setupSwipeToDeleteEvents(habitContainer, deleteButton);
-    setupOutsideClickSwipeCancel(habitContainer, deleteButton);
-
-    const habitIcon = createHabitIcon(habit);
-    const habitName = createHabitName(habit);
-    const habitStreak = createHabitStreak(habit);
-    const habitProgressButton = createHabitProgressButton(habit);
-
-    habitContainer.append(habitIcon, habitName, habitStreak, habitProgressButton, deleteButton);
-    habitList.appendChild(habitContainer);
+  Habits.uncategorized.forEach((habit) => {
+    createHabitInList(habit);
   });
+
+  const addUncategorizedDiv = document.createElement('div');
+  addUncategorizedDiv.classList.add('add-uncategorized-container');
+
+  const addHabitButton = document.createElement('button');
+  addHabitButton.classList.add('add-list-element-btn');
+  addHabitButton.onclick = () => openHabitCreationModal();
+  addHabitButton.textContent = '+';
+  addUncategorizedDiv.appendChild(addHabitButton);
+
+  const addCategoryButton = document.createElement('button');
+  addCategoryButton.classList.add('add-list-element-btn');
+  addCategoryButton.onclick = () => openCategoryCreationModal();
+  addCategoryButton.textContent = '{+}';
+  addUncategorizedDiv.appendChild(addCategoryButton);
+
+  habitList.appendChild(addUncategorizedDiv);
+
+  Habits.categories.forEach((category) => {
+    const categoryContainer = document.createElement('div');
+    categoryContainer.classList.add('category-container');
+
+    const categoryTitle = document.createElement('h2');
+    categoryTitle.textContent = category.name;
+    categoryTitle.classList.add('category-title');
+    categoryTitle.addEventListener('click', () => {
+      category.renderContents = !category.renderContents;
+      renderHabits();
+    });
+
+    categoryContainer.appendChild(categoryTitle);
+    habitList.appendChild(categoryContainer);
+
+    if (category.renderContents) {
+      category.habits.forEach(habit => {
+        createHabitInList(habit);
+      });
+      const addButton = document.createElement('button');
+      addButton.classList.add('add-list-element-btn');
+      addButton.onclick = () => openHabitCreationModal(category.name);
+      addButton.textContent = '+';
+      habitList.appendChild(addButton);
+    }
+  })
 }
 
 function clearHabitList() {
   habitList.innerHTML = '';
+}
+
+function createHabitInList(habit) {
+  const habitContainer = createHabitContainer(habit);
+
+  const deleteButton = createDeleteButton(habit, habitContainer);
+  setupSwipeToDeleteEvents(habitContainer, deleteButton);
+  setupOutsideClickSwipeCancel(habitContainer, deleteButton);
+
+  const habitIcon = createHabitIcon(habit);
+  const habitName = createHabitName(habit);
+  const habitStreak = createHabitStreak(habit);
+  const habitProgressButton = createHabitProgressButton(habit);
+
+  habitContainer.append(habitIcon, habitName, habitStreak, habitProgressButton, deleteButton);
+  habitList.appendChild(habitContainer);
 }
 function createHabitContainer(habit) {
   const container = document.createElement('div');
@@ -299,7 +431,7 @@ function createHabitContainer(habit) {
   container.style.borderColor = habit.color;
   return container;
 }
-function createDeleteButton(habit, habitContainer) {
+function createDeleteButton(habit) {
   const button = document.createElement('button');
   button.classList.add('delete-button');
   button.textContent = 'X';
@@ -325,6 +457,7 @@ function createHabitName(habit) {
   name.classList.add('habit-name');
   name.textContent = habit.name;
   name.style.color = habit.color;
+  name.onclick = () => openHabitDetail(habit);
   return name;
 }
 function createHabitStreak(habit) {
@@ -473,16 +606,6 @@ function updateDaysProgress(targetDate, habit, progressIndicatorElement, indicat
 
     if(newCount >= habit.completionGoal && dayProgressEntry.count < habit.completionGoal) {
       habit.completedDays++;
-
-      const habitContainerInList = document.querySelector(`.habit-container[habit-id="${habit.id}"]`);
-      habitContainerInList.classList.add('move-down');
-      habitList.classList.add('move-list-up');
-      // Wait for animation to complete before moving the item
-      habitContainerInList.addEventListener('transitionend', function() {
-          habitList.classList.remove('move-list-up');
-          habitContainerInList.classList.remove('move-down');
-          habitList.appendChild(habitContainerInList);
-      }, { once: true });
     }
     else if (newCount < habit.completionGoal && dayProgressEntry.count >= habit.completionGoal) {
       habit.completedDays--;
@@ -503,7 +626,7 @@ function updateDaysProgress(targetDate, habit, progressIndicatorElement, indicat
   }
 
   // render progress indicator
-  updateProgressBar(habit, progressIndicatorElement, indicatorType, statusSymbol, newCount);
+  updateProgressBar(habit, progressIndicatorElement, indicatorType, statusSymbol, newCount, valueChanged);
 }
 
 function calculateNewCount(habit, currentCount, increment) {
@@ -511,7 +634,7 @@ function calculateNewCount(habit, currentCount, increment) {
   return habit.infiniteCounter ? newCount : Math.min(newCount, habit.completionGoal);
 }
 
-function updateProgressBar(habit, progressBar, indicatorType, statusSymbol, completionCount) {
+function updateProgressBar(habit, progressBar, indicatorType, statusSymbol, completionCount, valueChanged = true) {
   const completionRatio = completionCount / habit.completionGoal;
 
   let completionMarker = '';
@@ -524,7 +647,7 @@ function updateProgressBar(habit, progressBar, indicatorType, statusSymbol, comp
     completionMarker = completionRatio === 1 ? '✔' : '+';
 
     if (ALTERNATE_PROGRESS_BUTTON) 
-      animateProgress(progressBar, completionPercentage);
+      animateProgress(progressBar, completionPercentage, valueChanged ? 0.05 : 10);
     else 
     {
       progressBar.style.width = `${completionPercentage}%`;
@@ -537,9 +660,9 @@ function updateProgressBar(habit, progressBar, indicatorType, statusSymbol, comp
   statusSymbol.textContent = habit.infiniteCounter && completionRatio > 1 ? completionCount : completionMarker;
 }
 
-function animateProgress(progressRing, targetProgress) {
-  const easeFactor = 0.05; // Controls the easing effect
+function animateProgress(progressRing, targetProgress, easeFactor) {
   let currentProgress = new Number(progressRing.style.getPropertyValue('--progress-angle').slice(0, -3)) / 360 * 100;
+  const positiveChange = targetProgress > currentProgress;
 
   function step() {
     // Calculate the difference between the current and target progress
@@ -547,6 +670,7 @@ function animateProgress(progressRing, targetProgress) {
 
     // Apply easing by updating current progress based on the difference
     currentProgress += progressDifference * easeFactor;
+    currentProgress = positiveChange ? Math.min(currentProgress, targetProgress) : Math.max(currentProgress, targetProgress);
 
     // Update the CSS custom property for the current angle
     const angle = (currentProgress / 100) * 360;

@@ -22,7 +22,6 @@
   <main id="content">
     <section id="habit-tracker" class="tab">
       <div id="habit-list"></div>
-      <button id="add-habit-btn" onclick="openHabitCreationModal()">+</button>
     </section>
     
     <section id="workout-manager" class="tab">
@@ -176,8 +175,26 @@
 
           <!-- Action Buttons -->
           <div class="button-group">
-              <button class="cancel-button" id="cancel-button">Cancel</button>
-              <button class="submit-button" id="submit-button">Next</button>
+              <button class="cancel-button" id="habit-creation-cancel-button">Cancel</button>
+              <button class="submit-button" id="habit-creation-submit-button">Next</button>
+          </div>
+    </div>
+  </div>
+
+  <!-- Category Creation Modal -->
+  <div id="category-creation" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">Create New Habit Category</div>
+          <!-- Categoty Name -->
+          <div class="input-group">
+            <label for="category-name">Habit Name</label>
+            <input type="text" id="category-name" placeholder="Enter category name" autocomplete="off">
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="button-group">
+              <button class="cancel-button" id="category-creation-cancel-button">Cancel</button>
+              <button class="submit-button" id="category-creation-submit-button">Next</button>
           </div>
     </div>
   </div>
