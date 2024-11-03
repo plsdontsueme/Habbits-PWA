@@ -522,7 +522,7 @@ function updateProgressBar(habit, progressBar, indicatorType, statusSymbol, comp
     throw new Error('Invalid indicator type');
   }
 
-  statusSymbol.textContent = habit.infiniteCounter && completionRatio > 1 ? completionCount : completionMarker;
+  statusSymbol.textContent = habit.infiniteCounter && completionMarker > 1 ? completionCount : completionMarker;
 }
 
 function animateProgress(progressRing, targetProgress) {
