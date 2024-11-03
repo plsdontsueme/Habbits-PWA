@@ -523,7 +523,7 @@ function updateProgressBar(habit, progressBar, indicatorType, statusSymbol, comp
 }
 
 function animateProgress(progressRing, targetProgress) {
-  const easeFactor = 0.01; // Controls the easing effect
+  const easeFactor = 0.05; // Controls the easing effect
   let currentProgress = new Number(progressRing.style.getPropertyValue('--progress-angle').slice(0, -3)) / 360 * 100;
 
   function step() {
