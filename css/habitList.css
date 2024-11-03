@@ -116,8 +116,8 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 35px;
-    height: 35px;
+    width: 20%;
+    height: 20%;
     background: var(--elevated-section-color);
     border-radius: 50%;
   }
