@@ -502,14 +502,15 @@ function calculateNewCount(habit, currentCount, increment) {
 function updateProgressBar(habit, progressBar, indicatorType, statusSymbol, completionCount) {
   const completionRatio = completionCount / habit.completionGoal;
 
-  const completionMarker = completionRatio === 1 ? '✔' : '+';
-  statusSymbol.textContent = habit.infiniteCounter && completionRatio > 1 ? completionCount : completionMarker;
+  let completionMarker = '';
 
   const completionPercentage = Math.min(completionRatio * 100, 100);
   if (indicatorType === 'calendar-day') {
     progressBar.style.height = `${completionPercentage}%`;
   }
   else if (indicatorType === 'dashboard-habit') {
+    completionRatio === 1 ? '✔' : '+';
+    
     if (ALTERNATE_PROGRESS_BUTTON) 
       animateProgress(progressBar, completionPercentage);
     else 
@@ -520,6 +521,8 @@ function updateProgressBar(habit, progressBar, indicatorType, statusSymbol, comp
   else {
     throw new Error('Invalid indicator type');
   }
+
+  statusSymbol.textContent = habit.infiniteCounter && completionRatio > 1 ? completionCount : completionMarker;
 }
 
 function animateProgress(progressRing, targetProgress) {
