@@ -11,10 +11,16 @@
 }
 
 /* Habit List */
-#habit-list {
+  #habit-list {
     display: flex;
     flex-direction: column;
     align-items: center;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+  }
+
+  .move-list-up {
+    transform: translateY(-50px);
+    opacity: 0;
   }
   
   .habit-container {
@@ -28,7 +34,12 @@
     width: 100%;
     max-width: 500px;
     position: relative;
-    transition: transform 0.3s ease;
+    transition: transform 0.5s ease, opacity 0.5s ease;
+  }
+
+  .move-down {
+    transform: translateY(100px);
+    opacity: 0;
   }
   
   .habit-container.swiped {

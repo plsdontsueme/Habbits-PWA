@@ -295,6 +295,7 @@ function clearHabitList() {
 function createHabitContainer(habit) {
   const container = document.createElement('div');
   container.classList.add('habit-container');
+  container.setAttribute('habit-id', habit.id);
   container.style.borderColor = habit.color;
   return container;
 }
@@ -462,15 +463,26 @@ function updateDaysProgress(targetDate, habit, progressIndicatorElement, indicat
 
   if (!dayProgressEntry) {
     dayProgressEntry = { date: targetDate, count: 0 };
-    habit.completion.push(dayProgressEntry);
   }
   
   const newCount = calculateNewCount(habit, dayProgressEntry.count, increment);
   const valueChanged = newCount !== dayProgressEntry.count;
 
   if (valueChanged) {
+    habit.completion.push(dayProgressEntry);
+
     if(newCount >= habit.completionGoal && dayProgressEntry.count < habit.completionGoal) {
       habit.completedDays++;
+
+      const habitContainerInList = document.querySelector(`.habit-container[habit-id="${habit.id}"]`);
+      habitContainerInList.classList.add('move-down');
+      habitList.classList.add('move-list-up');
+      // Wait for animation to complete before moving the item
+      habitContainerInList.addEventListener('transitionend', function() {
+          habitList.classList.remove('move-list-up');
+          habitContainerInList.classList.remove('move-down');
+          habitList.appendChild(habitContainerInList);
+      }, { once: true });
     }
     else if (newCount < habit.completionGoal && dayProgressEntry.count >= habit.completionGoal) {
       habit.completedDays--;
