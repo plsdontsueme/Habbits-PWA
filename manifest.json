@@ -1,6 +1,6 @@
 {
-    "name": "BestLife",
-    "short_name": "BestLife",
+    "name": "BetterTrack",
+    "short_name": "BetterTrack",
     "description": "A simple offline habit tracker",
     "start_url": "./index.html",
     "display": "standalone",

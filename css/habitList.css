@@ -5,13 +5,15 @@
 }
 
 .add-list-element-btn {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 1rem;
     margin: var(--habit-list-spacing) .5rem;
     border-radius: 10px;
-    width: 50px;
-    height: 50px;
-    color: white;
+    width: 40px;
+    height: 40px;
+    color: var(--semi-transparent-overlay);
     border: 2px solid;
     background: transparent;
     cursor: pointer;
@@ -22,29 +24,33 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    transition: transform 0.5s ease, opacity 0.5s ease;
-  }
-
-  .move-list-up {
-    transform: translateY(-50px);
-    opacity: 0;
   }
 
   .category-container {
+    display: flex;
+    align-items: center;
     padding: 1rem;
     margin: var(--habit-list-spacing) 0;
     margin-top: 2rem;
     border-radius: 10px;
     border: 2px solid;
     background: transparent;
-    width: 100%;
-    max-width: 500px;
+    width: 80%;
+    max-width: 400px;
     position: relative;
+    transition: transform 0.5s ease;
+  }
+
+  .category-show-button {
+    font-size: 1.25rem;
+    flex-grow: 1;
+    font-size: 16px;
+    font-weight: bold;
   }
 
   .category-title {
-    display: flex;
-    justify-content: center;
+    font-size: 1.25rem;
+    flex-grow: 1;
     font-size: 16px;
     font-weight: bold;
   }
@@ -60,14 +66,10 @@
     width: 100%;
     max-width: 500px;
     position: relative;
-    transition: transform 0.5s ease, opacity 0.5s ease;
-  }
-
-  .move-down {
-    transform: translateY(100px);
-    opacity: 0;
+    transition: transform 0.5s ease;
   }
   
+  .category-container.swiped,
   .habit-container.swiped {
     transform: translateX(-50px); /* Shift left */
   }
@@ -91,6 +93,7 @@
     justify-content: center;
   }
   
+  .category-container.swiped .delete-button,
   .habit-container.swiped .delete-button {
     left: 100%; /* Slide it in from the right */
   }

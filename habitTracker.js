@@ -13,6 +13,23 @@ const months = [
 const daysSingle = ["M", "T", "W", "T", "F", "S", "S"];
 const daysShort = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+// Initialize Pickr
+const pickr = Pickr.create({
+  el: '#hidden-color-picker',
+  theme: 'monolith', // Available themes: 'classic', 'monolith', 'nano'
+  default: '#fff',
+  components: {
+    preview: true,
+    opacity: false,
+    hue: true,
+    interaction: {
+      input: true,
+      clear: false,
+      save: true
+    }
+  }
+});
+
 let Habits;
 let todayDate;
 let todayString;
@@ -56,7 +73,7 @@ function saveHabitsAsUTC() {
   let utcHabits = {uncategorized: [], categories: []};
   utcHabits.uncategorized = toUTC(Habits.uncategorized);
   Habits.categories.forEach(category => {
-    const utcCategory = {name: category.name, habits: toUTC(category.habits)};
+    const utcCategory = {name: category.name, color: category.color, renderContents: category.renderContents, habits: toUTC(category.habits)};
     utcHabits.categories.push(utcCategory);
   });
   const dataArray = [utcHabits];
@@ -70,7 +87,7 @@ function loadHabitsAsLocal() {
     utcHabits = utcHabits[0];
     Habits.uncategorized = toLocal(utcHabits.uncategorized);
     utcHabits.categories.forEach(category => {
-      const localCategory = {name: category.name, habits: toLocal(category.habits)};
+      const localCategory = {name: category.name, color: category.color, renderContents: category.renderContents, habits: toLocal(category.habits)};
       Habits.categories.push(localCategory);
     });
   }
@@ -103,15 +120,14 @@ function toLocal(habitsArray) {
 //#endregion
 
 //#region Habit Array Manipulation
-function addCategory(name) {
-  Habits.categories.push({name: name, renderContents: true, habits: []});
+function addCategory(name, color) {
+  Habits.categories.push({name: name, color: color, renderContents: true, habits: []});
 }
-function removeCategory(name) {
-  const category = Habits.categories.find(c => c.name === category);
+function removeCategory(category) {
   category.habits.forEach(habit => {
     cancelNotification(habit)
   });
-  Habits.categories = Habits.categories.filter(c => c.name !== name);
+  Habits.categories = Habits.categories.filter(c => c !== category);
 }
 
 function addHabit(habit) {
@@ -162,16 +178,49 @@ function closeCategoryCreationModal() {
 }
 function resetCategoryCreationModal() {
   categoryNameInput.value = '';
+  categorySelectedColor = '#fff'
+  categoryCustomColorTrigger.style.setProperty('--before-bg-color', categorySelectedColor);
+  document.querySelectorAll('.color-option').forEach(option => option.classList.remove('selected'));
 }
 
 const categoryCreationModal = document.getElementById('category-creation');
 const categoryCreationCancelButton = document.getElementById('category-creation-cancel-button');
 const categoryCreationSubmitButton = document.getElementById('category-creation-submit-button');
 const categoryNameInput = document.getElementById('category-name');
+// Color Selection
+let categorySelectedColor;
+const categoryColorSelection = document.getElementById('category-color-selection');
+const categoryCustomColorTrigger = document.getElementById('category-custom-color-trigger');
+// Listen for color changes and save them
+pickr.on('save', (color) => {
+  const pickedColor = color.toHEXA().toString();
+  categoryCustomColorTrigger.style.setProperty('--before-bg-color', pickedColor);
+  categorySelectedColor = pickedColor;
+  pickr.hide(); // Hide the picker after selection
+});
+// Event listener for color selection
+categoryColorSelection.addEventListener('click', (e) => {
+  if (e.target.classList.contains('color-option')) {
+    // Remove 'selected' class from other options
+    document.querySelectorAll('.color-option').forEach(option => option.classList.remove('selected'));
+
+    if (e.target === categoryCustomColorTrigger) {
+      // Trigger Pickr if custom color option is clicked
+      categorySelectedColor = categoryCustomColorTrigger.style.getPropertyValue('--before-bg-color');
+      pickr.setColor(categorySelectedColor);
+      pickr.show();
+    } else {
+      // Standard color option was clicked
+      e.target.classList.add('selected');
+      categorySelectedColor = e.target.style.backgroundColor;
+      categoryCustomColorTrigger.style.setProperty('--before-bg-color', categorySelectedColor);
+    }
+  }
+});
 
 categoryCreationCancelButton.addEventListener('click', closeCategoryCreationModal);
 categoryCreationSubmitButton.addEventListener('click', (e) => {
-  addCategory(categoryNameInput.value || 'My New Category');
+  addCategory(categoryNameInput.value || 'My New Category', categorySelectedColor);
   renderHabits();
   closeCategoryCreationModal();
 });
@@ -239,22 +288,6 @@ habitIconInput.addEventListener('input', () => {
 // Color Selection
 const colorSelection = document.getElementById('color-selection');
 const customColorTrigger = document.getElementById('custom-color-trigger');
-// Initialize Pickr
-const pickr = Pickr.create({
-  el: '#hidden-color-picker',
-  theme: 'monolith', // Available themes: 'classic', 'monolith', 'nano'
-  default: selectedColor,
-  components: {
-    preview: true,
-    opacity: false,
-    hue: true,
-    interaction: {
-      input: true,
-      clear: false,
-      save: true
-    }
-  }
-});
 // Listen for color changes and save them
 pickr.on('save', (color) => {
   const pickedColor = color.toHEXA().toString();
@@ -380,16 +413,36 @@ function renderHabits() {
   Habits.categories.forEach((category) => {
     const categoryContainer = document.createElement('div');
     categoryContainer.classList.add('category-container');
+    categoryContainer.style.borderColor = category.renderContents;
 
-    const categoryTitle = document.createElement('h2');
-    categoryTitle.textContent = category.name;
-    categoryTitle.classList.add('category-title');
-    categoryTitle.addEventListener('click', () => {
+    const delButton = document.createElement('button');
+    delButton.classList.add('delete-button');
+    delButton.textContent = 'X';
+    delButton.style.display = 'none'; // Initially hidden
+
+    delButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      removeCategory(category);
+      renderHabits();
+    });
+    setupSwipeToDeleteEvents(categoryContainer, delButton);
+    setupOutsideClickSwipeCancel(categoryContainer, delButton);
+
+    const showElementButton = document.createElement('h2');
+    showElementButton.classList.add('category-show-button');
+    showElementButton.style.color = category.color;
+    showElementButton.textContent = category.renderContents ? '^' : 'v';
+    showElementButton.addEventListener('click', () => {
       category.renderContents = !category.renderContents;
       renderHabits();
     });
 
-    categoryContainer.appendChild(categoryTitle);
+    const categoryTitle = document.createElement('h2');
+    categoryTitle.textContent = category.name;
+    categoryTitle.classList.add('category-title');
+    categoryTitle.style.color = category.color;
+
+    categoryContainer.append(showElementButton, categoryTitle, delButton);
     habitList.appendChild(categoryContainer);
 
     if (category.renderContents) {
@@ -445,6 +498,45 @@ function createDeleteButton(habit) {
   
   return button;
 }
+function setupSwipeToDeleteEvents(habitContainer, deleteButton) {
+  let startX, currentX, isSwiping = false;
+  // Swipe Events for Mobile
+  habitContainer.addEventListener('touchstart', (e) => startSwipe(e.touches[0].clientX));
+  habitContainer.addEventListener('touchmove', (e) => handleSwipeMove(e.touches[0].clientX, habitContainer, deleteButton));
+  habitContainer.addEventListener('touchend', endSwipe);
+  // Swipe Events for Desktop
+  habitContainer.addEventListener('mousedown', (e) => startSwipe(e.clientX));
+  habitContainer.addEventListener('mousemove', (e) => handleSwipeMove(e.clientX, habitContainer, deleteButton));
+  habitContainer.addEventListener('mouseup', endSwipe);
+
+  function startSwipe(x) {
+    startX = x;
+    isSwiping = true;
+  }
+  function handleSwipeMove(x, container, button) {
+    if (!isSwiping) return;
+    currentX = x;
+    const diffX = currentX - startX;
+    if (diffX < -DELETE_SWIPE_THRESHOLD) {
+      container.classList.add('swiped');
+      button.style.display = 'block'; // Show delete button
+    } else if (diffX > 0) {
+      container.classList.remove('swiped');
+      button.style.display = 'none'; // Hide delete button
+    }
+  }
+  function endSwipe() {
+    isSwiping = false;
+  }
+}
+function setupOutsideClickSwipeCancel(habitContainer, deleteButton) {
+  document.addEventListener('click', (e) => {
+    if (!habitContainer.contains(e.target)) {
+      habitContainer.classList.remove('swiped');
+      deleteButton.style.display = 'none';
+    }
+  });
+}
 function createHabitIcon(habit) {
   const icon = document.createElement('span');
   icon.classList.add('habit-icon');
@@ -487,45 +579,6 @@ function createHabitProgressButton(habit) {
   updateDaysProgress(todayString, habit, progressBar, 'dashboard-habit', checkIcon, 0);
 
   return progressContainer;
-}
-function setupSwipeToDeleteEvents(habitContainer, deleteButton) {
-  let startX, currentX, isSwiping = false;
-  // Swipe Events for Mobile
-  habitContainer.addEventListener('touchstart', (e) => startSwipe(e.touches[0].clientX));
-  habitContainer.addEventListener('touchmove', (e) => handleSwipeMove(e.touches[0].clientX, habitContainer, deleteButton));
-  habitContainer.addEventListener('touchend', endSwipe);
-  // Swipe Events for Desktop
-  habitContainer.addEventListener('mousedown', (e) => startSwipe(e.clientX));
-  habitContainer.addEventListener('mousemove', (e) => handleSwipeMove(e.clientX, habitContainer, deleteButton));
-  habitContainer.addEventListener('mouseup', endSwipe);
-
-  function startSwipe(x) {
-    startX = x;
-    isSwiping = true;
-  }
-  function handleSwipeMove(x, container, button) {
-    if (!isSwiping) return;
-    currentX = x;
-    const diffX = currentX - startX;
-    if (diffX < -DELETE_SWIPE_THRESHOLD) {
-      container.classList.add('swiped');
-      button.style.display = 'block'; // Show delete button
-    } else if (diffX > 0) {
-      container.classList.remove('swiped');
-      button.style.display = 'none'; // Hide delete button
-    }
-  }
-  function endSwipe() {
-    isSwiping = false;
-  }
-}
-function setupOutsideClickSwipeCancel(habitContainer, deleteButton) {
-  document.addEventListener('click', (e) => {
-    if (!habitContainer.contains(e.target)) {
-      habitContainer.classList.remove('swiped');
-      deleteButton.style.display = 'none';
-    }
-  });
 }
 //#endregion
 
