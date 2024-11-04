@@ -462,6 +462,10 @@ function clearHabitList() {
   habitList.innerHTML = '';
 }
 
+function removeHabitInList(habit) {
+  const habitContainer = document.querySelector(`[habit-id="${habit.id}"]`);
+  habitContainer.remove();
+}
 function createHabitInList(habit) {
   const habitContainer = createHabitContainer(habit);
 
@@ -493,7 +497,7 @@ function createDeleteButton(habit) {
   button.addEventListener('click', (e) => {
     e.stopPropagation();
     removeHabit(habit);
-    renderHabits();
+    removeHabitInList(habit);
   });
   
   return button;
