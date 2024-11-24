@@ -58,7 +58,7 @@
   .habit-container {
     display: flex;
     align-items: center;
-    padding: 1rem;
+    padding: 0.5rem;
     margin: var(--habit-list-spacing) 0;
     border-radius: 10px;
     border: 2px solid;
